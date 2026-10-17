@@ -152,51 +152,91 @@ Enclosing blending must not penetrate this boundary.
 This is a future type; upstream {fmt} does not provide it. Initial work modifies
 the existing `text_style` before adding structured text.
 
-The intended owned structure contains a `text_style` and:
+The intended structure contains a `text_style` and:
 
 ```cpp
-std::variant<std::string_view, std::vector<styled_text>>
+std::variant<std::string_view, std::vector<const styled_text*>>
 ```
 
-It holds either text or nested styled children. Applying an enclosing style
-preserves enclosed members and their styles. Composition records structure and
-intent; the renderer resolves effective styles later. It does not eagerly
-rewrite the child tree or store embedded SGR as the normal representation.
+It borrows the text characters and enclosed child nodes, owning only its vector
+of child pointers. Copying copies the string view or pointer vector, not the
+characters or the enclosed nodes. Applying an enclosing style preserves the
+enclosed members and their styles. Composition records structure and intent;
+the renderer resolves effective styles later. It does not eagerly rewrite the
+children or store embedded SGR as the normal representation.
 
-`styled_text`'s constructor shall be:
+The referenced characters and child nodes must outlive every use of the
+structure. Child nodes must remain at stable addresses; moving, destroying, or
+relocating a referenced child can invalidate the structure. A pointer to const
+prevents modification through that pointer, but does not provide ownership or
+prevent modification through another reference. Borrowed relationships must
+not form cycles.
+
+The planned constructors are:
 
 ```cpp
 constexpr styled_text() noexcept = default;
 constexpr styled_text(const styled_text&) = default;
-constexpr explicit styled_text(std::string_view, text_style=text_style{}) noexcept;
-constexpr styled_text(styled_text, text_style);
+constexpr explicit styled_text(std::string_view, text_style = text_style{}) noexcept;
+constexpr styled_text(const styled_text& child, text_style style);
+
+styled_text(styled_text&&, text_style) = delete;
+styled_text(const styled_text&&, text_style) = delete;
 ```
 
-### `blend(styled_text, styled_text)`
+The wrapping constructor borrows the child by const lvalue reference and records
+its address. The style argument is required, keeping wrapping distinct from
+copy construction. The deleted overloads reject temporary children for this
+constructor; they do not eliminate the caller's obligation to preserve the
+lifetime of an accepted lvalue. String-view construction likewise requires
+the referenced characters to remain valid.
 
-Plan a lazy operation with this general shape:
+Direct construction supplies the new styling API. Using `styled()` with a
+`styled_text` in the usual formatting context remains supported.
+
+### Lazy blending
+
+Plan this member operation:
 
 ```cpp
-constexpr auto blend(styled_text text, text_style style) -> styled_text;
+styled_text& blend() noexcept;
 ```
 
-It records enclosing blending intent, preserves enclosed members, and respects
-absolute boundaries. The renderer performs the actual RGB blending. Whether
-the intent is stored in a private style bit or in a private `styled_text`
-member is an implementation detail.  Owned string/vector construction may
-allocate, so `noexcept` is not assumed.
+It enables blending of the current node's style with enclosed styles during
+rendering and returns `*this`. It changes only the current node's blending
+policy; it does not traverse or modify its children. Absolute boundaries remain
+protected. Whether the policy is stored in a private style bit or in a private
+`styled_text` member is an implementation detail.
 
-Other color types are converted to RGB using the above palette before blending
-by the renderer.
+For example:
+
+```cpp
+styled_text wrapper{child, style};
+wrapper.blend();
+```
+
+The child must outlive the wrapper's use. Wrapper construction may allocate
+the child-pointer vector, so it is not declared `noexcept`. Enabling the policy
+through `.blend()` does not require that allocation.
+
+Do not provide the previously proposed free `blend(styled_text, text_style)`
+operation. Explicit RGB `blend(rgb, rgb)` and fluent
+`text_style::blend(text_style)` remain planned.
+
+The renderer converts other color types to RGB before blending. Terminal colors
+use the fixed `terminal_palette` above; cube and gray colors use their conversion
+formulas.
 
 The motivating use is text containing individually emphasized or colored
 phrases, then an enclosing paragraph background, and later an enclosing flash
 style. Preserve the nested structure throughout, with absolute text protected.
 
-Plain-text construction should reject embedded ANSI escapes; rejecting every
-ESC byte is a proposed simple rule. A separately named unchecked conversion
-may bypass validation for trusted input. Other terminal controls and the exact
-validation API remain open. ANSI input uses an explicit parser.
+### Plain text and SGR input
+
+Plain-text construction does not scan for or reject embedded SGR sequences.
+Callers supply plain text; when input may contain SGR, they call the explicit
+SGR parser first. No separate unchecked constructor is needed merely to bypass
+an SGR validation scan.
 
 ## Rendering and ANSI parsing
 
@@ -237,11 +277,13 @@ controls padding. Decide padding placement for nested text. For a lazy
 `styled_arg<T>`, preserve underlying type-specific formatting, with its padding
 inside the styled span.
 
-Prefer `constexpr` operations throughout. C++23 constant evaluation and owned
-dynamic storage impose limits; this is not a promise that a populated dynamic
-tree can be stored as a persistent constexpr object. A bounded `static_string`
-and suitable child storage may support that eventual use. Exact compile-time
-storage design is open; do not assume C++26 facilities are available today.
+Prefer `constexpr` operations throughout. C++23 constant evaluation and the
+owned child-pointer vector impose limits; this is not a promise that a populated
+dynamic structure can be stored as a persistent constexpr object. Borrowed
+characters and nodes must also have suitable lifetimes. A bounded `static_string`
+and suitable child-pointer storage may support that eventual use. Exact
+compile-time storage design is open; do not assume C++26 facilities are
+available today.
 
 ## Human-readable style descriptions
 
