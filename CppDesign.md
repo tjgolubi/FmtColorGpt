@@ -53,11 +53,38 @@ Zero must not accidentally mean an unspecified color when it denotes a valid
 color. Details of additional color types and terminal enum changes will be
 reviewed as separate features.
 
-Plan explicit promotion from every supported color type to RGB using predefined
-palettes. A predefined palette is the selected mapping, not a measurement of a
-user's terminal theme. No implicit promotion is required for blending.
-Explicit demotion to the nearest palette color is a possible later feature;
-palette selection and the distance metric remain open.
+Plan explicit promotion from every supported color type to RGB using the
+following `terminal_palette`.  `terminal_palette` was selected because Xterm is
+a commonly-used standard terminal.  At compile-time, we can't know user's actual
+terminal theme. No implicit promotion is required for blending.  Explicit
+demotion to the nearest palette color is a possible later feature using
+euclidian distance to the nearest color in the three-dimensional RGB color
+space.
+
+```cpp
+// This terminal color palette is based on the Xterm default.
+inline constexpr std::array<rgb, 16> terminal_palette = {{
+  // 0–7 normal
+  rgb{  0,   0,   0},  // black
+  rgb{205,   0,   0},  // red
+  rgb{  0, 205,   0},  // green
+  rgb{205, 205,   0},  // yellow
+  rgb{  0,   0, 238},  // blue
+  rgb{205,   0, 205},  // magenta
+  rgb{  0, 205, 205},  // cyan
+  rgb{229, 229, 229},  // white
+
+  // 8–15 bright
+  rgb{127, 127, 127},  // bright black
+  rgb{255,   0,   0},  // bright red
+  rgb{  0, 255,   0},  // bright green
+  rgb{255, 255,   0},  // bright yellow
+  rgb{ 92,  92, 255},  // bright blue
+  rgb{255,   0, 255},  // bright magenta
+  rgb{  0, 255, 255},  // bright cyan
+  rgb{255, 255, 255}   // bright white
+}}; // terminal_palette
+```
 
 Plan this standalone RGB operation:
 
@@ -68,7 +95,7 @@ constexpr auto blend(rgb a, rgb b) noexcept -> rgb;
 It performs bitwise OR on corresponding red, green, and blue channels. It is
 not averaging or alpha compositing. Only RGB colors support color blending.
 
-## text_style
+## `text_style`
 
 The proposed compact representation is a 64-bit style with foreground and
 background modes and payloads, emphasis, an `absolute` flag, and reserved bits.
@@ -78,19 +105,19 @@ Do not expose the in-memory representation as a permanent public contract.
 
 ### Composition and replacement
 
-`operator|` composes independently specified components. `fg(red) | bg(blue)`
-is valid. Two specified colors for the same channel are rejected, including
-identical colors; such duplication may be a mistake. Ordinary style
-composition does not blend colors.
-
 Fluent foreground and background setters explicitly replace their channel.
 They provide a direct alternative to constructing styles through OR operations.
 Keep operations `constexpr` where feasible.
 
 Plan a fluent `text_style::blend(text_style)` operation. It provides an explicit
-way to combine styles and uses the RGB operation above for color blending.
-Its return type, unspecified-channel behavior, non-RGB conflicts, emphasis
-handling, and interaction with `absolute` remain to be specified.
+way to combine styles and uses the RGB `blend()` operation above for color
+blending.  Its return type, unspecified-channel behavior, non-RGB conflicts,
+emphasis handling, and interaction with `absolute` remain to be specified.
+
+`operator|` composes independently specified components. `fg(red) | bg(blue)`
+is valid. Two specified colors for the same channel are rejected, including
+identical colors; such duplication may be a mistake. Ordinary style
+composition does not blend colors.
 
 The relationship of `|=` to internal rendering policy remains an implementation
 question. No hidden policy or change to binary `|` is prescribed here. In
@@ -120,52 +147,148 @@ rendering starts from terminal defaults rather than inheriting the enclosing
 style. Descendants can inherit the absolute node's own style normally.
 Enclosing blending must not penetrate this boundary.
 
-## styled_text
+## `styled_text`
 
 This is a future type; upstream {fmt} does not provide it. Initial work modifies
 the existing `text_style` before adding structured text.
 
-The intended owned structure contains a `text_style` and:
+The current design intention is a `text_style` plus three content alternatives:
 
 ```cpp
-std::variant<std::string, std::vector<styled_text>>
+std::variant<
+    std::string_view,
+    const styled_text*,
+    std::vector<styled_text>
+>
 ```
 
-It holds either text or nested styled children. Applying an enclosing style
-preserves enclosed members and their styles. Composition records structure and
-intent; the renderer resolves effective styles later. It does not eagerly
-rewrite the child tree or store embedded SGR as the normal representation.
+- A string view borrows immutable text characters without copying them.
+- A pointer borrows one existing subtree, allowing an enclosing style to be
+  applied without copying that subtree.
+- A vector owns child nodes for concatenation and parser-created structure.
+  Those nodes can themselves contain any of the three alternatives.
 
-Retain the value-first order of `styled(value, style)`. Styling an arbitrary
-value may remain a lazy `styled_arg<T>` so native type-specific formatting
-continues to work. Its exact relationship to the owned tree remains open.
+Appending new styled fragments is the primary use case. Design this path to
+build owned child vectors efficiently and move temporary nodes into them.
+Copying an owned vector copies its child nodes recursively, but string views
+still refer to the original characters. Copying a borrowed-subtree node copies
+the pointer, not its target. Moving should transfer owned storage without
+deep-copying the tree.
 
-Plan a lazy operation with this general shape:
+Applying an enclosing style preserves the enclosed styles. Composition records
+structure and intent; the renderer resolves effective styles later. It does
+not eagerly rewrite the children or store embedded SGR as the normal
+representation.
+
+This is a design intention to try in practice, not a commitment to retain the
+representation regardless of implementation experience. If borrowing makes
+implementation or usage too difficult, fall back to:
 
 ```cpp
-constexpr auto blend(styled_text text, text_style style) -> styled_text;
+std::variant<std::string_view, std::vector<styled_text>>
 ```
 
-It records enclosing blending intent, preserves enclosed members, and respects
-absolute boundaries. The renderer performs the actual RGB blending. Whether
-the intent is stored in a private style bit or in a private `styled_text`
-member is an implementation detail. Exact signatures, copying/moving behavior,
-and exception specifications remain open; owned string/vector construction may
-allocate, so `noexcept` is not assumed.
+That fallback still borrows characters, but owns every child subtree. Wrapping
+an lvalue would copy its nodes; transferring an rvalue could move them.
 
-Ordinary enclosing color conflicts still need a precise policy: preserve the
-inner color, override it, or select behavior explicitly. Decide whether
-foreground and background require independent policies and how non-RGB
-conflicts behave during requested blending. Do not silently choose a policy.
+### Lifetimes and construction
+
+Referenced characters must remain valid for every use of the structure,
+including when child nodes are owned. A borrowed subtree must also outlive its
+use and remain at a stable address. Moving, destroying, or relocating its target
+can invalidate a pointer. A pointer to const prevents modification through that
+pointer, but does not provide ownership or prevent modification through another
+reference. Borrowed relationships must not form cycles.
+
+The intended constructor directions are:
+
+```cpp
+constexpr styled_text() noexcept = default;
+constexpr styled_text(const styled_text&) = default;
+constexpr styled_text(styled_text&&) = default;
+constexpr explicit styled_text(std::string_view, text_style = text_style{}) noexcept;
+constexpr styled_text(const styled_text& child, text_style style);
+constexpr styled_text(styled_text&& child, text_style style);
+```
+
+Wrapping an lvalue borrows its address; wrapping a temporary or transferred
+rvalue must instead own the child, moving it into child storage. Never retain a
+pointer to a constructor parameter or temporary that will be destroyed.
+The required style argument keeps wrapping distinct from copy/move
+construction. Exact overloads and exception specifications will be reviewed
+during implementation.
+
+### Appending and parsing
+
+The proposed append behavior can be illustrated by:
+
+```cpp
+auto rval = styled_text{"plain1 "};
+rval += styled_text{"red ", fg(terminal_color::red)};
+rval += "plain2";
+```
+
+The first append changes the root from a text view into an owned child vector
+containing the original plain fragment and the moved red fragment. The next
+append adds a plain fragment. The result owns three child nodes, while their
+characters remain borrowed. No borrowed-subtree pointer is required for this
+example. Preserve the existing fragment styles when forming the enclosing
+sequence.
+
+The SGR parser likewise owns the nodes it creates. Its text fragments can be
+string views into the original input, excluding the SGR sequences; keeping the
+input valid preserves those characters. Owning the parser-created nodes avoids
+pointers to parser-local objects that would dangle after return. If parsing ever
+requires transformed character storage, that storage needs a separate lifetime
+solution. Exact append overloads and parser APIs remain open.
+
+Direct construction supplies the new styling API. Using `styled()` with a
+`styled_text` in the usual formatting context remains supported.
+
+### Lazy blending
+
+Plan this member operation:
+
+```cpp
+styled_text& blend() noexcept;
+```
+
+It enables blending of the current node's style with enclosed styles during
+rendering and returns `*this`. It changes only the current node's blending
+policy; it does not traverse or modify its children. Absolute boundaries remain
+protected. Whether the policy is stored in a private style bit or in a private
+`styled_text` member is an implementation detail.
+
+For example:
+
+```cpp
+styled_text wrapper{child, style};
+wrapper.blend();
+```
+
+In this lvalue-wrapping example, the child must outlive the wrapper's use;
+the wrapper uses the borrowed-subtree pointer. Owning construction and appending
+may allocate child storage. Enabling the policy through `.blend()` only changes
+the current node and does not allocate or copy children.
+
+Do not provide the previously proposed free `blend(styled_text, text_style)`
+operation. Explicit RGB `blend(rgb, rgb)` and fluent
+`text_style::blend(text_style)` remain planned.
+
+The renderer converts other color types to RGB before blending. Terminal colors
+use the fixed `terminal_palette` above; cube and gray colors use their conversion
+formulas.
 
 The motivating use is text containing individually emphasized or colored
 phrases, then an enclosing paragraph background, and later an enclosing flash
 style. Preserve the nested structure throughout, with absolute text protected.
 
-Plain-text construction should reject embedded ANSI escapes; rejecting every
-ESC byte is a proposed simple rule. A separately named unchecked conversion
-may bypass validation for trusted input. Other terminal controls and the exact
-validation API remain open. ANSI input uses an explicit parser.
+### Plain text and SGR input
+
+Plain-text construction does not scan for or reject embedded SGR sequences.
+Callers supply plain text; when input may contain SGR, they call the explicit
+SGR parser first. No separate unchecked constructor is needed merely to bypass
+an SGR validation scan.
 
 ## Rendering and ANSI parsing
 
@@ -176,7 +299,7 @@ Keep three responsibilities distinct:
 2. A terminal formatter directly emits ordinary ANSI SGR while resolving the
    tree. It does not call `render()` or require an extended-SGR intermediate.
 3. An ANSI parser consumes ordinary SGR and the extended push/pop markers to
-   construct structured text.
+   construct a structured `styled_text`.
 
 The legacy markers are `ESC[00m` for push and `ESC[000m` for pop, distinct from
 `ESC[0m` reset. Verify detailed behavior against `AnsiColor.hpp` and
@@ -206,11 +329,13 @@ controls padding. Decide padding placement for nested text. For a lazy
 `styled_arg<T>`, preserve underlying type-specific formatting, with its padding
 inside the styled span.
 
-Prefer `constexpr` operations throughout. C++23 constant evaluation and owned
-dynamic storage impose limits; this is not a promise that a populated dynamic
-tree can be stored as a persistent constexpr object. A bounded `static_string`
-and suitable child storage may support that eventual use. Exact compile-time
-storage design is open; do not assume C++26 facilities are available today.
+Prefer `constexpr` operations throughout. C++23 constant evaluation and the
+owned child vector impose limits; this is not a promise that a populated
+dynamic structure can be stored as a persistent constexpr object. Borrowed
+characters and nodes must also have suitable lifetimes. A bounded `static_string`
+and suitable child storage may support that eventual use. Exact
+compile-time storage design is open; do not assume C++26 facilities are
+available today.
 
 ## Human-readable style descriptions
 
