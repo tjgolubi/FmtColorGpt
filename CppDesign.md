@@ -39,6 +39,11 @@ project's styling API, not arbitrary fmtlib-specific application code. Exact
 proposed APIs remain subject to review; no binary-compatibility guarantee is
 established by this decision.
 
+The shared-source target is styling code using symbolic color names and the
+project's styling operations. Underlying numeric terminal-color values may
+differ between deliverables; retaining the same header path and API does not
+promise identical enum representations.
+
 During the {fmt} stage, preserve upstream headers, compatibility macros,
 formatting machinery, tests, and build configuration except for agreed changes.
 We are not replacing its formatting engine or broadly rewriting it in C++23.
@@ -67,6 +72,18 @@ Keep terminal, indexed/palette, gray, and RGB colors conceptually distinct.
 Zero must not accidentally mean an unspecified color when it denotes a valid
 color. Details of additional color types and terminal enum changes will be
 reviewed as separate features.
+
+The proposed change to the `terminal_color` representation is negotiable for
+the {fmt} contribution. If upstream requires the existing numeric SGR values,
+such as `std::to_underlying(terminal_color::black) == 30`, retain those values in
+the {fmt}-based deliverable and defer the representation change to the
+independent C++26-only deliverable. Terry accepts that compatibility requirement
+if upstream requests it; the representation change is not a prerequisite for
+offering the other styling extensions.
+
+This is a contingency for upstream review, not a claim that upstream has
+already requested or accepted either representation. Code using symbolic
+terminal-color names and styling operations should work with either encoding.
 
 Plan explicit promotion from every supported color type to RGB using the
 following `terminal_palette`.  `terminal_palette` was selected because Xterm is
