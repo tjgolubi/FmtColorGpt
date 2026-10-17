@@ -13,6 +13,13 @@ library. We plan two sequential deliverables:
 We develop against C++23 now. The {fmt} extension is the intermediate step;
 the standard-library refactor follows it rather than being developed in parallel.
 
+Both deliverables retain `<fmt/color.h>` and the project's styling API in the
+`fmt` namespace. Users select the implementation through their include path,
+pointing to the corresponding installation. The intent is to keep user styling
+code unchanged between deliverables. The second deliverable uses standard C++
+formatting rather than fmtlib's formatting engine or unrelated extensions.
+See [CppDesign.md](CppDesign.md) for the compatibility scope.
+
 These coordination documents apply across source branches. They are maintained
 separately from the library so they remain available when switching branches.
 They are not part of the FmtColor library deliverable.

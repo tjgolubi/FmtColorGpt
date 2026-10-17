@@ -24,6 +24,21 @@ These are successive stages, not parallel development paths. C++23 is our
 current implementation baseline. We do not assume future language or library
 features are available in today's toolchains.
 
+### Source compatibility between deliverables
+
+Both deliverables retain the public header path `<fmt/color.h>` and the
+project's styling API in the `fmt` namespace. Users select the corresponding
+installation through their include path (`INCLUDE_PATH`); changing deliverables
+should not require changing their styling source code.
+
+The second deliverable implements the styling facilities on standard C++
+formatting, without depending on fmtlib's formatting engine, compatibility
+machinery, or unrelated extensions. Keeping the header path and namespace does
+not imply a fmtlib dependency. This source-compatibility intent covers the
+project's styling API, not arbitrary fmtlib-specific application code. Exact
+proposed APIs remain subject to review; no binary-compatibility guarantee is
+established by this decision.
+
 During the {fmt} stage, preserve upstream headers, compatibility macros,
 formatting machinery, tests, and build configuration except for agreed changes.
 We are not replacing its formatting engine or broadly rewriting it in C++23.

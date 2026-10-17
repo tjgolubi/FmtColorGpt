@@ -69,6 +69,15 @@ Keep the sample program and its expected styled output together. Clearly label
 an example that uses planned APIs rather than the current implementation.
 Retain downloadable code and output where useful.
 
+The website example targets the second deliverable: the styling library built
+on standard C++ formatting, without fmtlib's formatting engine or unrelated
+extensions. It retains `#include <fmt/color.h>` and the project's styling API in
+the `fmt` namespace, while using standard formatting output such as
+`std::println`. The include path selects the second deliverable's installation;
+the header spelling does not imply a dependency on fmtlib. Explain this choice
+and keep proposed names consistent with the reviewed API. See
+[CppDesign.md](CppDesign.md#source-compatibility-between-deliverables).
+
 The existing demonstration includes nested emphasis/colors, absolute styles,
 and `gray_color{12}`. Preserve those cases when revising its presentation.
 Expected output can be a screenshot or a faithful styled HTML rendering;
