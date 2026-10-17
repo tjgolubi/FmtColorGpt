@@ -152,44 +152,95 @@ Enclosing blending must not penetrate this boundary.
 This is a future type; upstream {fmt} does not provide it. Initial work modifies
 the existing `text_style` before adding structured text.
 
-The intended structure contains a `text_style` and:
+The current design intention is a `text_style` plus three content alternatives:
 
 ```cpp
-std::variant<std::string_view, std::vector<const styled_text*>>
+std::variant<
+    std::string_view,
+    const styled_text*,
+    std::vector<styled_text>
+>
 ```
 
-It borrows the text characters and enclosed child nodes, owning only its vector
-of child pointers. Copying copies the string view or pointer vector, not the
-characters or the enclosed nodes. Applying an enclosing style preserves the
-enclosed members and their styles. Composition records structure and intent;
-the renderer resolves effective styles later. It does not eagerly rewrite the
-children or store embedded SGR as the normal representation.
+- A string view borrows immutable text characters without copying them.
+- A pointer borrows one existing subtree, allowing an enclosing style to be
+  applied without copying that subtree.
+- A vector owns child nodes for concatenation and parser-created structure.
+  Those nodes can themselves contain any of the three alternatives.
 
-The referenced characters and child nodes must outlive every use of the
-structure. Child nodes must remain at stable addresses; moving, destroying, or
-relocating a referenced child can invalidate the structure. A pointer to const
-prevents modification through that pointer, but does not provide ownership or
-prevent modification through another reference. Borrowed relationships must
-not form cycles.
+Appending new styled fragments is the primary use case. Design this path to
+build owned child vectors efficiently and move temporary nodes into them.
+Copying an owned vector copies its child nodes recursively, but string views
+still refer to the original characters. Copying a borrowed-subtree node copies
+the pointer, not its target. Moving should transfer owned storage without
+deep-copying the tree.
 
-The planned constructors are:
+Applying an enclosing style preserves the enclosed styles. Composition records
+structure and intent; the renderer resolves effective styles later. It does
+not eagerly rewrite the children or store embedded SGR as the normal
+representation.
+
+This is a design intention to try in practice, not a commitment to retain the
+representation regardless of implementation experience. If borrowing makes
+implementation or usage too difficult, fall back to:
+
+```cpp
+std::variant<std::string_view, std::vector<styled_text>>
+```
+
+That fallback still borrows characters, but owns every child subtree. Wrapping
+an lvalue would copy its nodes; transferring an rvalue could move them.
+
+### Lifetimes and construction
+
+Referenced characters must remain valid for every use of the structure,
+including when child nodes are owned. A borrowed subtree must also outlive its
+use and remain at a stable address. Moving, destroying, or relocating its target
+can invalidate a pointer. A pointer to const prevents modification through that
+pointer, but does not provide ownership or prevent modification through another
+reference. Borrowed relationships must not form cycles.
+
+The intended constructor directions are:
 
 ```cpp
 constexpr styled_text() noexcept = default;
 constexpr styled_text(const styled_text&) = default;
+constexpr styled_text(styled_text&&) = default;
 constexpr explicit styled_text(std::string_view, text_style = text_style{}) noexcept;
 constexpr styled_text(const styled_text& child, text_style style);
-
-styled_text(styled_text&&, text_style) = delete;
-styled_text(const styled_text&&, text_style) = delete;
+constexpr styled_text(styled_text&& child, text_style style);
 ```
 
-The wrapping constructor borrows the child by const lvalue reference and records
-its address. The style argument is required, keeping wrapping distinct from
-copy construction. The deleted overloads reject temporary children for this
-constructor; they do not eliminate the caller's obligation to preserve the
-lifetime of an accepted lvalue. String-view construction likewise requires
-the referenced characters to remain valid.
+Wrapping an lvalue borrows its address; wrapping a temporary or transferred
+rvalue must instead own the child, moving it into child storage. Never retain a
+pointer to a constructor parameter or temporary that will be destroyed.
+The required style argument keeps wrapping distinct from copy/move
+construction. Exact overloads and exception specifications will be reviewed
+during implementation.
+
+### Appending and parsing
+
+The proposed append behavior can be illustrated by:
+
+```cpp
+auto rval = styled_text{"plain1 "};
+rval += styled_text{"red ", fg(terminal_color::red)};
+rval += "plain2";
+```
+
+The first append changes the root from a text view into an owned child vector
+containing the original plain fragment and the moved red fragment. The next
+append adds a plain fragment. The result owns three child nodes, while their
+characters remain borrowed. No borrowed-subtree pointer is required for this
+example. Preserve the existing fragment styles when forming the enclosing
+sequence.
+
+The SGR parser likewise owns the nodes it creates. Its text fragments can be
+string views into the original input, excluding the SGR sequences; keeping the
+input valid preserves those characters. Owning the parser-created nodes avoids
+pointers to parser-local objects that would dangle after return. If parsing ever
+requires transformed character storage, that storage needs a separate lifetime
+solution. Exact append overloads and parser APIs remain open.
 
 Direct construction supplies the new styling API. Using `styled()` with a
 `styled_text` in the usual formatting context remains supported.
@@ -215,9 +266,10 @@ styled_text wrapper{child, style};
 wrapper.blend();
 ```
 
-The child must outlive the wrapper's use. Wrapper construction may allocate
-the child-pointer vector, so it is not declared `noexcept`. Enabling the policy
-through `.blend()` does not require that allocation.
+In this lvalue-wrapping example, the child must outlive the wrapper's use;
+the wrapper uses the borrowed-subtree pointer. Owning construction and appending
+may allocate child storage. Enabling the policy through `.blend()` only changes
+the current node and does not allocate or copy children.
 
 Do not provide the previously proposed free `blend(styled_text, text_style)`
 operation. Explicit RGB `blend(rgb, rgb)` and fluent
@@ -278,10 +330,10 @@ controls padding. Decide padding placement for nested text. For a lazy
 inside the styled span.
 
 Prefer `constexpr` operations throughout. C++23 constant evaluation and the
-owned child-pointer vector impose limits; this is not a promise that a populated
+owned child vector impose limits; this is not a promise that a populated
 dynamic structure can be stored as a persistent constexpr object. Borrowed
 characters and nodes must also have suitable lifetimes. A bounded `static_string`
-and suitable child-pointer storage may support that eventual use. Exact
+and suitable child storage may support that eventual use. Exact
 compile-time storage design is open; do not assume C++26 facilities are
 available today.
 
