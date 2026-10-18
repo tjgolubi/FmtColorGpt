@@ -114,7 +114,7 @@ Python tools and builds documentation without changing the parent shell's PATH:
 )
 ```
 
-The `build/BuildBash` candidate branch tracks an executable `build.bash` that
+The executable `build.bash`, integrated into `FmtColor` on October 18, 2026,
 uses this same technique, builds the library in Release/C++23 mode, runs its
 tests, and generates documentation. Run it from the checkout root as
 `./build.bash` or `bash build.bash`; do not source it into an interactive shell.
@@ -122,8 +122,7 @@ It selects `FMTCOLOR_SKIP=ON` when it detects Termux and OFF elsewhere. The
 option still requires the separate `fix/Termux` implementation; selecting ON
 alone cannot enable skips on a branch that does not contain that change.
 The script stops on a failing test run, before the documentation-build step.
-Until integration, the script is not available on `FmtColor`; the commands
-above stand alone for other checkouts.
+The commands above remain useful for building documentation separately.
 
 Unlike the upstream release script, these local commands reuse an existing
 `build/venv` rather than deleting it on every run. Recreate the environment
@@ -165,25 +164,41 @@ and a Material notice about future MkDocs changes. These did not prevent the
 build. Preserve the pinned dependencies. Known upstream link/anchor issues
 are outside the current color work; review new documentation for correct links.
 
-### Candidate branch validation, October 18, 2026
+### Accepted build tooling and validation, October 18, 2026
 
-The reviewed `build/BuildBash` tip is
-`81483e0dd66545d40b8335dac4e5151ccd7ad323`. Its follow-up commit adds executable
-permission to `build.bash`; the script contents match the previously tested
-version. The consumer-language comment is being corrected during integration
-preparation; the script's C++23 setting does not change the library targets'
-public C++11 requirement. Terry also reported a successful PC build.
+`build/BuildBash` was integrated into `FmtColor` as one squash commit,
+[`f303af515b4a5295e67333d7697dd1c797b390d0`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0),
+and Terry pushed it to GitHub. The assistant fetched and verified that local
+and remote `FmtColor` matched, exactly one commit was added above upstream
+baseline `b4ffa39b9994c961418406f47358791d89a5aa48`, and the tree was clean.
 
-Terry reported that Termux correctly selected `FMTCOLOR_SKIP=ON`, built the
-library, and encountered two expected failing test executables because
-`fix/Termux` is not yet included. This is successful platform detection, not a
-passing full test suite or a completed end-to-end script run on Termux.
-Recheck the affected tests after the workaround is integrated.
+The commit includes executable `build.bash`, `cliff.toml`, the initial
+`FmtColorChangeLog.md` entry, and the `__pycache__/` ignore rule. No library
+API, ABI, stored-data, release-tag, or version-number change was made. Existing
+CMake/MkDocs documentation and script comments cover the tooling; no additional
+user-facing `/doc/` change was needed. The script's C++23 build setting does
+not change the library targets' public C++11 requirement.
 
-Git-cliff 2.14.2 preview verification on the PC is separate from build-script
-validation. Tablet git-cliff verification remains pending and is required
-before integration, following Workflow.md. No release tag or version-number
-change is proposed for this integration.
+The PC library build, all 22 CTest executables, and documentation generation
+were verified as recorded above; Terry also reported a successful PC build.
+Terry reported that Termux selected `FMTCOLOR_SKIP=ON`, built the library, and
+encountered two expected failing test executables because `fix/Termux` was not
+yet included. This establishes platform detection, not a passing full Termux
+test suite or completed end-to-end script run: the script stops at test failure
+before generating documentation. Recheck after the workaround is integrated.
+
+Git-cliff 2.14.2 works on both the PC and Termux. Terry supplied tablet results
+on October 18 after updating from 2.12.0 to 2.14.2. Captured output confirms
+the intended front matter, scoped entries, section ordering, bookkeeping
+exclusion, and protected breaking entry. The tablet prerequisite is complete;
+additional testing of git-cliff itself is outside this integration's scope.
+Use valid Conventional Commit messages with `--with-commit` to preview the
+prospective squash entry before including it in that same commit.
+
+The supplied tablet records were `GitCliffTabletTesting20261018.md`,
+`dotest.bash`, `git-cliff.txt`, and `dotest.txt`. These are validation evidence,
+not additional deliverable files. Website publication of the accepted change
+is still pending; see Website.md.
 
 ## Troubleshooting lessons
 

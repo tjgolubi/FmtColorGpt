@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Workflow](Workflow.md) · [Build and test](BuildAndTest.md)
 
-**Working draft, updated October 17, 2026.** This document records intended
+**Working draft, updated October 18, 2026.** This document records intended
 organization, maintenance guidance, and the publication status verified below.
 Later edits must distinguish current observations from future plans.
 
@@ -47,6 +47,24 @@ The published example source and expected ANSI output were preserved. The
 updated pages and local links were checked in a desktop browser and through
 local validation; tablet layout and compilation of the proposed example were
 not verified in that update.
+
+### Publication pending after the first integration
+
+On October 18, 2026, `build/BuildBash` was accepted as the first project squash
+commit on `FmtColor`:
+[`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0),
+`build: add shared build script and changelog configuration`. It is pushed and
+verified. It adds the shared MSYS/Termux build script, git-cliff configuration,
+initial fork changelog, and Python bytecode ignore rule. PC build/test/docs
+validation and PC/tablet git-cliff verification are recorded in BuildAndTest.md.
+
+The website explanation is prepared but has not been published. The last
+published pages described above therefore lag the repository. Next publication
+should add the accepted commit's rationale and validation limits to integrated
+changes, link its exact commit, and update the approved WIP status and order.
+Do not describe this pending publication as already deployed. The accepted
+BuildBash change belongs in integrated changes; it does not need a candidate
+WIP entry. No new candidate-branch website approval is recorded here.
 
 ## Integrated changes
 
@@ -94,12 +112,16 @@ As of October 17, 2026, Terry approved these two branches for inclusion:
 
 | Branch | Reviewed tip | Expected order and dependencies |
 | --- | --- | --- |
-| `fix/Termux` | `fa2b1563bc7b4d3314b3b9c3006ccedd84b95cc2` | First: the integration currently under review. |
-| `feat/ConstColor` | `87b6cde3224fc368b63cd44545f569b49d7b027c` | Tentatively second; that position remains to be confirmed. No dependency on Termux was found in the reviewed history. |
+| `fix/Termux` | `671a9f357b0af64c0c5f3ed6733060dae7d8fc49` | Next candidate after BuildBash; rebased onto accepted `f303af51`. Validation after rebase is pending. |
+| `feat/ConstColor` | `87b6cde3224fc368b63cd44545f569b49d7b027c` | Tentatively after Termux; that position remains to be confirmed. No dependency on Termux was found in the reviewed history. |
 
-Both reviewed branches start directly from the baseline recorded above.
-Recheck history before changing dependency claims. No other branch has website
-inclusion approval recorded here.
+On October 18, the local and recorded remote `fix/Termux` tips matched the new
+commit above; its merge base with `FmtColor` is accepted `f303af51`. The diff
+still contains the same three test/build files and 36 insertions. The table
+records current repository status for the next website update, not a claim
+that the published page already has these links. `feat/ConstColor` retains its
+previously reviewed baseline and tip until rechecked. No other candidate branch
+has website inclusion approval recorded here.
 
 When a branch is accepted, move its explanation to integrated changes, update
 it for the final accepted behavior and validation, and link the resulting

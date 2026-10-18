@@ -42,6 +42,17 @@ They are not part of the FmtColor library deliverable.
 - [FmtColor website](https://fmtcolor.ardentokapi66.chatgpt.site): design and
   implementation explanations. Access depends on its current hosting settings.
 
+## Current integration status
+
+On October 18, 2026, the first project change was integrated and pushed to
+`FmtColor` as one squash commit:
+[`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0),
+adding the shared build script, git-cliff configuration, initial fork changelog,
+and Python bytecode ignore rule. Git-cliff 2.14.2 works on the PC and tablet.
+No release tag or version bump was created. See BuildAndTest.md for validation
+and its limits, and Website.md for the still-pending website publication.
+`fix/Termux` has been rebased onto this accepted commit and remains under review.
+
 ## Status and authority
 
 **Initial working draft: October 16, 2026.** These documents consolidate the
