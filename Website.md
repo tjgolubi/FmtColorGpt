@@ -26,45 +26,50 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
 
-The existing Site was updated on October 17, 2026. Its published pages are:
+The existing Site was updated and successfully published on October 18, 2026,
+as **version 4**. The Sites publication operation confirmed success and the
+existing owner-only access was preserved. Its published pages are:
 
 - [Overview and demonstration](https://fmtcolor.ardentokapi66.chatgpt.site/):
   the two sequential deliverables, their shared styling API and header path,
-  the proposed example, and the styling and rendering design.
-- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
-  the entry point for detailed documentation of accepted project commits.
+  the proposed example, and the styling and rendering design. This page and
+  its demonstration assets were unchanged by this publication.
+- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html#buildbash):
+  the accepted BuildBash commit's motivation, implementation, compatibility,
+  PC/tablet validation, and remaining Termux limitation.
 - [Work in progress](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html):
-  the approved candidate branches, their rationale, status, dependencies, and
-  provisional expected integration order.
+  the approved Termux and ConstColor candidates, with the rebased Termux tip,
+  current validation status, and provisional integration order.
 
-At that review, `FmtColor` was at upstream baseline
-`b4ffa39b9994c961418406f47358791d89a5aa48`, with no project extension commits yet
-integrated. The integrated-changes page states this explicitly. The Site's
-access was verified as owner-only. Recheck source history and access settings
-when updating these observations.
-
-The published example source and expected ANSI output were preserved. The
-updated pages and local links were checked in a desktop browser and through
-local validation; tablet layout and compilation of the proposed example were
-not verified in that update.
-
-### Publication pending after the first integration
-
-On October 18, 2026, `build/BuildBash` was accepted as the first project squash
-commit on `FmtColor`:
+The first accepted project squash commit is
 [`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0),
-`build: add shared build script and changelog configuration`. It is pushed and
-verified. It adds the shared MSYS/Termux build script, git-cliff configuration,
-initial fork changelog, and Python bytecode ignore rule. PC build/test/docs
-validation and PC/tablet git-cliff verification are recorded in BuildAndTest.md.
+`build: add shared build script and changelog configuration`. Its published
+explanation covers the shared MSYS/Termux script, isolated pinned documentation
+tools, fork changelog configuration, and Python bytecode ignore rule. It
+records that the two expected Termux test-executable failures remain pending
+`fix/Termux`, rather than claiming a passing end-to-end tablet script run.
+PC build/test/docs results and PC/tablet git-cliff verification are recorded
+in BuildAndTest.md and distinguished on the page.
 
-The website explanation is prepared but has not been published. The last
-published pages described above therefore lag the repository. Next publication
-should add the accepted commit's rationale and validation limits to integrated
-changes, link its exact commit, and update the approved WIP status and order.
-Do not describe this pending publication as already deployed. The accepted
-BuildBash change belongs in integrated changes; it does not need a candidate
-WIP entry. No new candidate-branch website approval is recorded here.
+Only the two affected pages changed. Local links and anchors were checked,
+and both pages were reviewed in a desktop browser preview. The overview,
+downloadable example source, and expected ANSI output were preserved. No
+library tests or proposed-example compilation were run for this content-only
+update. Actual tablet-device layout was not checked. The production page was
+opened for handoff but requested ChatGPT sign-in; authenticated production
+rendering was not independently inspected. Publication success is confirmed
+by the Sites result, not inferred from that sign-in page.
+
+Publication provenance:
+
+- Site source commit: `c86d47e9da539db1bdb846412d020d9d5a252412`.
+- Saved Site version: 4,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_ba26141167d88191bb7acdac6fa32c57`.
+- Successful deployment: `appgdep_6ad51eb512f4819198e92d935997fc75`.
+
+The accepted BuildBash explanation is now in integrated changes; it does not
+need a candidate WIP entry. No new candidate-branch website approval was added.
+The overview's future APIs remain proposals, as previously documented.
 
 ## Integrated changes
 
@@ -118,8 +123,8 @@ As of October 17, 2026, Terry approved these two branches for inclusion:
 On October 18, the local and recorded remote `fix/Termux` tips matched the new
 commit above; its merge base with `FmtColor` is accepted `f303af51`. The diff
 still contains the same three test/build files and 36 insertions. The table
-records current repository status for the next website update, not a claim
-that the published page already has these links. `feat/ConstColor` retains its
+records the repository status used in the October 18 publication; the
+published Termux entry now includes these links. `feat/ConstColor` retains its
 previously reviewed baseline and tip until rechecked. No other candidate branch
 has website inclusion approval recorded here.
 
@@ -239,7 +244,7 @@ latest source again when resuming after another assistant's update.
 
 ## Access and external links
 
-The website was verified owner-only on October 17, 2026. Its current access
+The website was verified owner-only on October 18, 2026. Its current access
 setting must be checked before describing it as public or usable by friends.
 A link on Terry's projects page does not itself change Site permissions.
 Routine authorized publication preserves the audience; changing access requires

@@ -50,7 +50,7 @@ On October 18, 2026, the first project change was integrated and pushed to
 adding the shared build script, git-cliff configuration, initial fork changelog,
 and Python bytecode ignore rule. Git-cliff 2.14.2 works on the PC and tablet.
 No release tag or version bump was created. See BuildAndTest.md for validation
-and its limits, and Website.md for the still-pending website publication.
+and its limits, and Website.md for the confirmed website publication.
 `fix/Termux` has been rebased onto this accepted commit and remains under review.
 
 ## Status and authority

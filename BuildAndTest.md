@@ -197,8 +197,8 @@ prospective squash entry before including it in that same commit.
 
 The supplied tablet records were `GitCliffTabletTesting20261018.md`,
 `dotest.bash`, `git-cliff.txt`, and `dotest.txt`. These are validation evidence,
-not additional deliverable files. Website publication of the accepted change
-is still pending; see Website.md.
+not additional deliverable files. The accepted change was published on the
+website on October 18 as Site version 4; see Website.md.
 
 ## Troubleshooting lessons
 
