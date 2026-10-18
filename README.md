@@ -51,7 +51,10 @@ adding the shared build script, git-cliff configuration, initial fork changelog,
 and Python bytecode ignore rule. Git-cliff 2.14.2 works on the PC and tablet.
 No release tag or version bump was created. See BuildAndTest.md for validation
 and its limits, and Website.md for the confirmed website publication.
-`fix/Termux` has been rebased onto this accepted commit and remains under review.
+The Termux workaround was then accepted and pushed as one further squash commit,
+[`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98).
+Terry reported successful PC and Termux runs of the rebased branch. Website
+version 5 documents both accepted changes; ConstColor remains a candidate.
 
 ## Status and authority
 

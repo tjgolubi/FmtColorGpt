@@ -26,50 +26,51 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
 
-The existing Site was updated and successfully published on October 18, 2026,
-as **version 4**. The Sites publication operation confirmed success and the
-existing owner-only access was preserved. Its published pages are:
+The existing Site was successfully published on October 18, 2026, as
+**version 5**. The Sites publication operation confirmed success and preserved
+owner-only access. Its published pages are:
 
 - [Overview and demonstration](https://fmtcolor.ardentokapi66.chatgpt.site/):
   the two sequential deliverables, their shared styling API and header path,
   the proposed example, and the styling and rendering design. This page and
-  its demonstration assets were unchanged by this publication.
-- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html#buildbash):
-  the accepted BuildBash commit's motivation, implementation, compatibility,
-  PC/tablet validation, and remaining Termux limitation.
+  its demonstration assets remain unchanged.
+- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
+  separate explanations for accepted BuildBash and Termux squash commits,
+  including rationale, implementation, compatibility, and validation limits.
 - [Work in progress](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html):
-  the approved Termux and ConstColor candidates, with the rebased Termux tip,
-  current validation status, and provisional integration order.
+  ConstColor is the remaining listed candidate. A short notice directs older
+  Termux links to its accepted explanation.
 
-The first accepted project squash commit is
-[`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0),
-`build: add shared build script and changelog configuration`. Its published
-explanation covers the shared MSYS/Termux script, isolated pinned documentation
-tools, fork changelog configuration, and Python bytecode ignore rule. It
-records that the two expected Termux test-executable failures remain pending
-`fix/Termux`, rather than claiming a passing end-to-end tablet script run.
-PC build/test/docs results and PC/tablet git-cliff verification are recorded
-in BuildAndTest.md and distinguished on the page.
+Accepted commits documented on the integrated-changes page:
 
-Only the two affected pages changed. Local links and anchors were checked,
-and both pages were reviewed in a desktop browser preview. The overview,
-downloadable example source, and expected ANSI output were preserved. No
-library tests or proposed-example compilation were run for this content-only
-update. Actual tablet-device layout was not checked. The production page was
-opened for handoff but requested ChatGPT sign-in; authenticated production
-rendering was not independently inspected. Publication success is confirmed
-by the Sites result, not inferred from that sign-in page.
+- [`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0):
+  shared build script, git-cliff configuration, initial fork changelog, and
+  Python bytecode ignore rule. Its two expected Termux test failures are now
+  described as historical and resolved by the subsequent workaround.
+- [`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98):
+  default-OFF, narrowly scoped test skips for Android fdsan conflicts. The
+  explanation records Terry's successful PC and Termux runs after rebase,
+  including the clean PC build, and distinguishes expected individual skips
+  from supplied verbose output. See BuildAndTest.md for validation details.
+
+Only the integrated-changes and WIP pages changed. Local links and anchors
+were checked, and both pages were reviewed in a desktop browser preview.
+The published integrated-changes page was also opened and its accepted Termux
+content confirmed. Overview, downloadable example source, and expected ANSI
+output were preserved. No library tests or proposed-example compilation were
+run for this content-only publication. Actual tablet-device layout was not
+checked.
 
 Publication provenance:
 
-- Site source commit: `c86d47e9da539db1bdb846412d020d9d5a252412`.
-- Saved Site version: 4,
-  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_ba26141167d88191bb7acdac6fa32c57`.
-- Successful deployment: `appgdep_6ad51eb512f4819198e92d935997fc75`.
+- Site source commit: `680f08f751d27b269ee065a353e003c38a919a08`.
+- Saved Site version: 5,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_02c7fc188e048191923dc1ef6256fd7f`.
+- Successful deployment: `appgdep_6ad528e9c80c81918cbba3412073d84e`.
 
-The accepted BuildBash explanation is now in integrated changes; it does not
-need a candidate WIP entry. No new candidate-branch website approval was added.
-The overview's future APIs remain proposals, as previously documented.
+Both accepted changes are in integrated changes, not candidate entries. No
+new candidate-branch website approval was added. The overview's future APIs
+remain proposals, as previously documented.
 
 ## Integrated changes
 
@@ -113,20 +114,19 @@ positions explicit. Update the order when review or dependencies change.
 Integration is conditional: a branch may change or never be accepted. Do not
 present the order as fixed or promise release dates.
 
-As of October 17, 2026, Terry approved these two branches for inclusion:
+Terry approved Termux and ConstColor for inclusion on October 17. Termux is
+now accepted and its explanation has moved to integrated changes. The remaining
+approved candidate is:
 
 | Branch | Reviewed tip | Expected order and dependencies |
 | --- | --- | --- |
-| `fix/Termux` | `671a9f357b0af64c0c5f3ed6733060dae7d8fc49` | Next candidate after BuildBash; rebased onto accepted `f303af51`. Validation after rebase is pending. |
-| `feat/ConstColor` | `87b6cde3224fc368b63cd44545f569b49d7b027c` | Tentatively after Termux; that position remains to be confirmed. No dependency on Termux was found in the reviewed history. |
+| `feat/ConstColor` | `87b6cde3224fc368b63cd44545f569b49d7b027c` | Remaining listed candidate; integration position and readiness are not yet confirmed. Baseline refresh and review remain pending. |
 
-On October 18, the local and recorded remote `fix/Termux` tips matched the new
-commit above; its merge base with `FmtColor` is accepted `f303af51`. The diff
-still contains the same three test/build files and 36 insertions. The table
-records the repository status used in the October 18 publication; the
-published Termux entry now includes these links. `feat/ConstColor` retains its
-previously reviewed baseline and tip until rechecked. No other candidate branch
-has website inclusion approval recorded here.
+The published ConstColor entry retains its earlier reviewed source and upstream
+baseline. No Termux code dependency was found in that review, but it has not
+been re-reviewed or rebased as part of the accepted build-tooling and Termux
+integrations. No other candidate branch has website inclusion approval recorded
+here. Branch history must be checked again before further integration work.
 
 When a branch is accepted, move its explanation to integrated changes, update
 it for the final accepted behavior and validation, and link the resulting

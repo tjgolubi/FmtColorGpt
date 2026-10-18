@@ -197,10 +197,14 @@ documentation, tests, or build changes:
    their scope is clear.
 
 This is a review checklist, not a requirement to change every document for
-every integration. For the Termux workaround, the current review conclusion is
-that the CMake option and warning-bearing test skips sufficiently explain the
-change without an upstream `/doc/` edit. Revisit that conclusion if the scope
-changes.
+every integration. The Termux workaround was accepted and pushed on October 18,
+2026, as one squash commit,
+[`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98),
+including its changelog entry. The CMake option and warning-bearing test skips
+sufficiently explain the change without an upstream `/doc/` edit. Its website
+explanation was then published as Site version 5 before this coordination
+update. See BuildAndTest.md for the reported platform results. Revisit the
+user-documentation conclusion if the scope changes.
 
 Rebasing is governed by the upstream-update policy below; it is not a
 requirement for accepting each individual change.

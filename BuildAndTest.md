@@ -72,9 +72,10 @@ targets. The source is authoritative if that selection changes.
 
 Keep the option OFF on the PC and ordinary Linux builds so those cases run.
 Because CMake caches options, explicitly turn it OFF when changing the purpose
-of an existing build directory. Terry reported successful runs of the workaround
-branch on both tablet and PC. This is reported validation, not a fresh check of
-the current integration branch or its merge status.
+of an existing build directory. The workaround is now integrated in `FmtColor`
+as `1c61e624`. Terry reported successful runs on the rebased branch on both
+PC and Termux; see the accepted validation record below. These are reported
+platform results, not a new assistant test run.
 
 ## Documentation dependencies
 
@@ -119,8 +120,9 @@ uses this same technique, builds the library in Release/C++23 mode, runs its
 tests, and generates documentation. Run it from the checkout root as
 `./build.bash` or `bash build.bash`; do not source it into an interactive shell.
 It selects `FMTCOLOR_SKIP=ON` when it detects Termux and OFF elsewhere. The
-option still requires the separate `fix/Termux` implementation; selecting ON
-alone cannot enable skips on a branch that does not contain that change.
+option's implementation was accepted in `1c61e624`; it is now present alongside
+the script on `FmtColor`. Selecting ON on older branches without that
+implementation cannot enable skips.
 The script stops on a failing test run, before the documentation-build step.
 The commands above remain useful for building documentation separately.
 
@@ -185,7 +187,8 @@ Terry reported that Termux selected `FMTCOLOR_SKIP=ON`, built the library, and
 encountered two expected failing test executables because `fix/Termux` was not
 yet included. This establishes platform detection, not a passing full Termux
 test suite or completed end-to-end script run: the script stops at test failure
-before generating documentation. Recheck after the workaround is integrated.
+before generating documentation. Those historical failures were resolved by
+the subsequently accepted Termux workaround, recorded below.
 
 Git-cliff 2.14.2 works on both the PC and Termux. Terry supplied tablet results
 on October 18 after updating from 2.12.0 to 2.14.2. Captured output confirms
@@ -199,6 +202,30 @@ The supplied tablet records were `GitCliffTabletTesting20261018.md`,
 `dotest.bash`, `git-cliff.txt`, and `dotest.txt`. These are validation evidence,
 not additional deliverable files. The accepted change was published on the
 website on October 18 as Site version 4; see Website.md.
+
+### Accepted Termux workaround and validation, October 18, 2026
+
+Terry committed the staged squash as
+[`1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98),
+`fix(test): allow optional skips for Android fdsan conflicts`, and pushed it.
+The assistant verified exactly one commit above `f303af51`, the four intended
+files, a tree matching the prepared feature branch, and clean whitespace
+checks. A subsequent fetch confirmed the accepted GitHub tip.
+
+Terry reported that `build.bash` ran successfully on the rebased `fix/Termux`
+branch on the PC after deleting `build/`, recreating the build and Python
+environment. He also reported success on Termux. The PC cache records Release,
+C++23, `FMT_TEST=ON`, `FMT_DOC=ON`, and `FMTCOLOR_SKIP=OFF`. Earlier Termux
+selection of ON was verified. Seven individual tablet skips are expected from
+source; a new verbose tablet log and exact compiler version were not supplied.
+These are user-reported results, not a fresh assistant build/test run.
+
+The commit includes the test-only option and guards plus its changelog entry.
+No library API, ABI, or stored-data representation changed. The CMake option
+and warning-bearing skips explain the workaround; no additional user-facing
+`/doc/` change was needed. Site version 5 publishes the accepted explanation
+and removes Termux from the candidate list. No release tag or version bump
+was created.
 
 ## Troubleshooting lessons
 
