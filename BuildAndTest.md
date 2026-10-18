@@ -114,10 +114,16 @@ Python tools and builds documentation without changing the parent shell's PATH:
 )
 ```
 
-The local, untracked `build.bash` convenience script uses this same technique
-and also builds the library and runs its tests. Run it as `bash build.bash`;
-do not source it into an interactive shell. It is a local convenience, not a
-file guaranteed to exist in every checkout. The commands above stand alone.
+The `build/BuildBash` candidate branch tracks an executable `build.bash` that
+uses this same technique, builds the library in Release/C++23 mode, runs its
+tests, and generates documentation. Run it from the checkout root as
+`./build.bash` or `bash build.bash`; do not source it into an interactive shell.
+It selects `FMTCOLOR_SKIP=ON` when it detects Termux and OFF elsewhere. The
+option still requires the separate `fix/Termux` implementation; selecting ON
+alone cannot enable skips on a branch that does not contain that change.
+The script stops on a failing test run, before the documentation-build step.
+Until integration, the script is not available on `FmtColor`; the commands
+above stand alone for other checkouts.
 
 Unlike the upstream release script, these local commands reuse an existing
 `build/venv` rather than deleting it on every run. Recreate the environment
@@ -158,6 +164,26 @@ The successful documentation build reported a missing anchor in `syntax.md`
 and a Material notice about future MkDocs changes. These did not prevent the
 build. Preserve the pinned dependencies. Known upstream link/anchor issues
 are outside the current color work; review new documentation for correct links.
+
+### Candidate branch validation, October 18, 2026
+
+The reviewed `build/BuildBash` tip is
+`81483e0dd66545d40b8335dac4e5151ccd7ad323`. Its follow-up commit adds executable
+permission to `build.bash`; the script contents match the previously tested
+version. The consumer-language comment is being corrected during integration
+preparation; the script's C++23 setting does not change the library targets'
+public C++11 requirement. Terry also reported a successful PC build.
+
+Terry reported that Termux correctly selected `FMTCOLOR_SKIP=ON`, built the
+library, and encountered two expected failing test executables because
+`fix/Termux` is not yet included. This is successful platform detection, not a
+passing full test suite or a completed end-to-end script run on Termux.
+Recheck the affected tests after the workaround is integrated.
+
+Git-cliff 2.14.2 preview verification on the PC is separate from build-script
+validation. Tablet git-cliff verification remains pending and is required
+before integration, following Workflow.md. No release tag or version-number
+change is proposed for this integration.
 
 ## Troubleshooting lessons
 
