@@ -83,41 +83,55 @@ plugins and Python support. Follow the checked-out
 `support/doc-requirements.txt` rather than installing an arbitrary latest
 MkDocs or changing upstream requirements for convenience.
 
+Follow the environment-setup technique in upstream `support/release.py`:
+create a Python virtual environment at `build/venv`, install the pinned
+requirements with hash verification, and pass its executable directory to
+CMake through PATH. This isolates the Python dependencies without requiring
+manual activation in the calling shell. Do not run the release script merely
+to build local documentation; it also performs release operations.
+
+For FmtColor on the PC, use the MSYS shell with Python, CMake, GCC, and Doxygen
+from `/usr/bin`. UCRT64 is reserved for work that needs that environment.
 Install a suitable Doxygen and Python through the platform's package manager.
-Use the project's virtual environment for the Python dependencies:
-
-```bash
-python -m venv venv
-source venv/bin/activate
-python -m pip install -r support/doc-requirements.txt
-command -v python
-python --version
-command -v mkdocs
-mkdocs --version
-command -v doxygen
-doxygen --version
-```
-
-The activation path above is the one used successfully with this project's
-Termux/MSYS2 environments. Other Python distributions can use a different
-virtual-environment layout; inspect the environment rather than mixing layouts.
+Do not reuse an environment created with UCRT64 Python in an MSYS build.
 
 ## Build and view documentation
 
-Activate the virtual environment first, then configure and build:
+From the checkout root in MSYS or Termux, the following subshell prepares the
+Python tools and builds documentation without changing the parent shell's PATH:
 
 ```bash
-cmake -S . -B build -DFMT_DOC=ON
-cmake --build build --target doc
+(
+  set -euo pipefail
+  if [[ ! -d build/venv ]]; then
+    python -m venv build/venv
+  fi
+  doc_bin="$(pwd)/build/venv/bin"
+  "$doc_bin/python" -m pip install --require-hashes -r support/doc-requirements.txt
+  export PATH="$doc_bin:$PATH"
+  cmake -S . -B build -U MKDOCS -DFMT_DOC=ON
+  cmake --build build --target doc
+)
 ```
 
-If CMake previously cached a stale MkDocs executable, clear that entry while
-configuring:
+The local, untracked `build.bash` convenience script uses this same technique
+and also builds the library and runs its tests. Run it as `bash build.bash`;
+do not source it into an interactive shell. It is a local convenience, not a
+file guaranteed to exist in every checkout. The commands above stand alone.
 
-```bash
-cmake -S . -B build -U MKDOCS -DFMT_DOC=ON
-cmake --build build --target doc
-```
+Unlike the upstream release script, these local commands reuse an existing
+`build/venv` rather than deleting it on every run. Recreate the environment
+when changing toolchains or after an incompatible Python upgrade, preserving
+any unrelated files first. Virtual environments are generated local files;
+do not commit them. The existing root-level `venv/` may remain untouched.
+If using that older environment interactively, `deactivate` exits it without
+deleting it. Activation is unnecessary for the script above.
+
+These MSYS/Termux environments use `bin/` inside the venv. Other Python
+distributions may use a different layout. Verify executable provenance with
+`command -v python cmake g++ doxygen` before setup, and inspect the venv's
+Python and MkDocs versions when troubleshooting. `-U MKDOCS` clears any cached
+MkDocs path so CMake finds the selected environment.
 
 The configuration is `support/mkdocs.yml`. The observed output directory is
 `build/doc-html`, even though upstream getting-started text may mention a
@@ -130,9 +144,20 @@ python -m http.server 8000 --bind 127.0.0.1 --directory build/doc-html
 ```
 
 Open `http://127.0.0.1:8000/` on that device. Stop the server with Ctrl-C.
-The Termux documentation build succeeded with the project virtual environment.
-Known upstream link/anchor issues were observed and are outside the current
-color work. New documentation should still be reviewed for correct links.
+The Termux documentation build previously succeeded with the project virtual
+environment. On October 17, 2026, Codex also verified an MSYS build of `FmtColor`
+at `b4ffa39b9994c961418406f47358791d89a5aa48`: Release, C++23, `FMT_TEST=ON`,
+`FMT_DOC=ON`, GCC 15.3.0, CMake 4.4.4, Python 3.12.15, MkDocs 1.6.1, and
+Doxygen 1.18.0. All 22 CTest executables passed and documentation was generated.
+The updated `build.bash` was verified end to end using `build/venv`:
+library build, all 22 CTest executables, and documentation generation succeeded.
+The baseline did not yet contain `FMTCOLOR_SKIP`; passing OFF produced an
+unused-option warning and did not skip tests.
+
+The successful documentation build reported a missing anchor in `syntax.md`
+and a Material notice about future MkDocs changes. These did not prevent the
+build. Preserve the pinned dependencies. Known upstream link/anchor issues
+are outside the current color work; review new documentation for correct links.
 
 ## Troubleshooting lessons
 
