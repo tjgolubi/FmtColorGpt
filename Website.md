@@ -28,7 +28,10 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 The existing Site was successfully published on October 18, 2026, as
 **version 5**. The Sites publication operation confirmed success and preserved
-owner-only access. Its published pages are:
+the then-owner-only access. Later that day, at Terry's explicit request, access
+was changed to **public**; the Sites access operation confirmed the change.
+Anyone with the URL can now visit. Content and Site version were unchanged by
+the access update. Its published pages are:
 
 - [Overview and demonstration](https://fmtcolor.ardentokapi66.chatgpt.site/):
   the two sequential deliverables, their shared styling API and header path,
@@ -244,11 +247,12 @@ latest source again when resuming after another assistant's update.
 
 ## Access and external links
 
-The website was verified owner-only on October 18, 2026. Its current access
-setting must be checked before describing it as public or usable by friends.
-A link on Terry's projects page does not itself change Site permissions.
-Routine authorized publication preserves the audience; changing access requires
-Terry's explicit instruction.
+On October 18, 2026, Terry explicitly requested public access. The Sites access
+operation confirmed `access_mode=public`, policy revision 2. Anyone with the
+URL can visit the website. Routine maintenance must preserve this public
+audience; changing it again requires Terry's explicit instruction. Recheck
+current access when resuming work rather than relying on older private-site
+observations. A link on Terry's projects page does not itself change access.
 
 Terry intends to link from his personal website's projects page. Personal
 website changes belong in their own work context; they are not library changes.
