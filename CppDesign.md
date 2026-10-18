@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-**Initial working draft: October 16, 2026.** Forward intentions, not an
+**Working draft, updated October 18, 2026.** Forward intentions, not an
 implementation authorization or a claim that all features exist.
 
 ## Goals and boundaries
@@ -44,6 +44,11 @@ project's styling operations. Underlying numeric terminal-color values may
 differ between deliverables; retaining the same header path and API does not
 promise identical enum representations.
 
+The emphasis vocabulary also has an explicit deliverable difference: conceal
+remains in {fmt}, while our C++23-compatible library replaces it with flash.
+Shared-source intent applies to common styling facilities; it does not make
+those two attributes interchangeable.
+
 During the {fmt} stage, preserve upstream headers, compatibility macros,
 formatting machinery, tests, and build configuration except for agreed changes.
 We are not replacing its formatting engine or broadly rewriting it in C++23.
@@ -56,9 +61,41 @@ the later standard-library refactor.
 Modified source follows the style already present in that source. The eventual
 independent library follows standard C++ library naming and API style.
 
+## Proposed branches and integration priorities
+
+Agreed planning decisions, October 18, 2026: prioritize non-breaking additions
+for the {fmt}-compatible deliverable. Passing tests does not by itself establish
+source/API, binary/ABI, or stored-data compatibility. Existing behavior remains
+until an explicitly reviewed breaking feature changes it.
+
+| Priority | Proposed branch | Scope and compatibility |
+| --- | --- | --- |
+| 1 | `feat/Fluent` | Add fluent setters and getters for existing colors and emphasis. Preserve existing APIs, operators, rendering, layout, and supported language modes. |
+| 2 | `feat/Palette` | Add `cube_color` and `gray_color` with foreground/background and fluent support. Use discriminator `10` while preserving existing encodings and composition behavior. Intended as a non-breaking addition. |
+| Later; relative order open | `feat/ConstColor` | Replace the named-color enum with RGB constants and make packed RGB conversions explicit. Breaking candidate; implemented on its branch. |
+| Later; relative order open | `refactor/TermColorValue` | Change terminal-color values from SGR numbers to 0–15 while preserving symbolic styling and emitted SGR. Breaking numeric-value contract; implemented on its branch. |
+| Later; relative order open | `feat/Blend` | Introduce RGB and style blending together with breaking strict-composition semantics for both `operator|` and `operator|=`. Include migration guidance. |
+| After required foundations | `feat/StyledText` | Structured nested text, `absolute`, and lazy blending during rendering. Exact dependencies and compatibility effects remain to be reviewed. |
+
+Fluent before Palette is a planning priority, not a necessary code dependency.
+Neither requires ConstColor or renumbered terminal colors. Palette must support
+the existing operator behavior until Blend deliberately changes it. StyledText
+uses style semantics and color support; its precise branch dependencies remain
+open. Binary serialization and the later standard-format refactor are not
+prerequisites for these additions.
+
+These are approved website proposals, not integration approvals. Create branches
+when implementation begins from the accepted baseline at that time; do not
+create speculative branches merely to populate the plan. A local Fluent branch
+was created early at the unchanged baseline; that does not mean implementation
+has begun. ConstColor and TermColorValue have Terry-reported PC and tablet
+passes, recorded in [BuildAndTest.md](BuildAndTest.md), and still need acceptance
+review. Their successful tests do not move them ahead of non-breaking work.
+
 ## Colors
 
-Replace `enum class color` with `namespace color` containing named RGB
+The breaking `feat/ConstColor` candidate replaces `enum class color` with
+`namespace color` containing named RGB
 constants. Use decimal `rgb{red, green, blue}` initializers, preserving the
 existing names and values. Keep the constants in `color.h` for this change.
 This preserves common expressions such as `fg(color::red)`, but intentionally
@@ -70,10 +107,21 @@ the high byte. Retain {fmt}'s existing compatibility provisions in this code.
 
 Keep terminal, indexed/palette, gray, and RGB colors conceptually distinct.
 Zero must not accidentally mean an unspecified color when it denotes a valid
-color. Details of additional color types and terminal enum changes will be
-reviewed as separate features.
+color. The separate `feat/Palette` proposal adds `cube_color` (6×6×6 cube) and
+`gray_color` (24-level grayscale ramp) for indexed-palette output. Preserve
+existing `terminal_color` values and encoding in this additive feature. The
+current `text_style` discriminator `10` is unused; the proposed palette payload
+identifies the indexed color. Presence checks, classification, getters, OR
+overflow arithmetic, and SGR generation currently rely on the old discriminator
+invariants and must be reviewed together. Test foreground/background
+discriminator combinations while preserving existing user-visible behavior.
+Range validation, exact constructors, and RGB promotion APIs remain open.
+Keeping object layout unchanged alone does not prove mixed-version ABI safety.
 
-The proposed change to the `terminal_color` representation is negotiable for
+The separate breaking `refactor/TermColorValue` candidate changes numeric values
+from 30–37 and 90–97 to 0–15 and maps them back to SGR during rendering. Code
+using numeric conversions or persisted values needs migration; symbolic styling
+remains unchanged. This representation change is negotiable for
 the {fmt} contribution. If upstream requires the existing numeric SGR values,
 such as `std::to_underlying(terminal_color::black) == 30`, retain those values in
 the {fmt}-based deliverable and defer the representation change to the
@@ -124,8 +172,10 @@ Plan this standalone RGB operation:
 constexpr auto blend(rgb a, rgb b) noexcept -> rgb;
 ```
 
-It performs bitwise OR on corresponding red, green, and blue channels. It is
-not averaging or alpha compositing. Only RGB colors support color blending.
+It performs bitwise OR on corresponding red, green, and blue channels, not
+averaging or alpha compositing. Color blending operates on RGB values; other
+supported color categories can be promoted for explicit style blending. This
+operation belongs to `feat/Blend` together with the operator changes below.
 
 ## `text_style`
 
@@ -137,52 +187,66 @@ Do not expose the in-memory representation as a permanent public contract.
 
 ### Composition and replacement
 
-Fluent foreground and background setters explicitly replace their channel.
-They provide a direct alternative to constructing styles through OR operations.
-Keep operations `constexpr` where feasible.
+The additive `feat/Fluent` proposal supplies fluent setters and getters.
+Foreground and background setters replace only their channel; emphasis setters
+toggle their own bit. Existing getters, free `fg()`/`bg()`, constructors,
+operators, rendering, and object layout remain available with existing behavior.
+Keep `constexpr` and upstream language-compatibility provisions where feasible.
+Naming, chaining return types, and clearing colors remain to be settled.
+Making the private packed-value constructor explicit is a small related cleanup
+to include with another change, adjusting internal direct construction; it does
+not warrant its own branch.
 
-Plan a fluent `text_style::blend(text_style)` operation. It provides an explicit
-way to combine styles and uses the RGB `blend()` operation above for color
-blending.  Its return type, unspecified-channel behavior, non-RGB conflicts,
-emphasis handling, and interaction with `absolute` remain to be specified.
+Current {fmt} `operator|` and `operator|=` OR overlapping RGB bits. They reject
+a terminal color overlapping another specified color in the same channel;
+terminal foreground plus background or emphasis still composes normally.
+Preserve this behavior through Fluent and Palette.
 
-`operator|` composes independently specified components. `fg(red) | bg(blue)`
-is valid. Two specified colors for the same channel are rejected, including
-identical colors; such duplication may be a mistake. Ordinary style
-composition does not blend colors.
+The breaking `feat/Blend` proposal introduces standalone RGB `blend()` and
+fluent `text_style::blend(text_style)` together with strict composition for both
+`operator|` and `operator|=`. Independent components such as
+`fg(red) | bg(blue)` remain valid. Two specified colors in the same channel are
+rejected, including identical colors. Intentional old RGB-OR blending migrates
+to explicit blending operations in the same feature.
 
-The relationship of `|=` to internal rendering policy remains an implementation
-question. No hidden policy or change to binary `|` is prescribed here. In
-particular, do not infer public operator semantics from a possible internal
-blend flag.
+Style blending uses the RGB operation and can promote other supported color
+categories to RGB. Its return type, unspecified-channel behavior, exact
+promotion/conflict rules, emphasis handling, and interaction with `absolute`
+remain to be specified. The public operators do not enable a hidden rendering
+blend policy. Lazy nested-text blending belongs to StyledText.
 
 ### Emphasis
 
-The intended attributes include bold, faint, italic, underline, blink, flash,
-inverse, and strike. Conceal is not currently desired.
+For the {fmt}-compatible deliverable, retain the existing emphasis set and
+names, including `conceal`, and do not add `flash`. For our C++23-compatible
+library design, replace conceal with flash; this does not change the eventual
+standard C++26 target or authorize flash in the {fmt} deliverable.
 
-Fluent setters maintain exclusive representations for bold/faint and
-blink/flash. Getters report their effective states. When styles are combined,
-the implementation may OR emphasis bits and retain both members of a pair.
-The visible effects remain mutually exclusive: bold has priority over faint,
-and flash has priority over blink.
+Bold and faint are independent in both deliverables. A setter toggles its own
+bit without clearing the other; getters report each bit. When both are set,
+render both without library-imposed precedence. Do not promise a uniform
+combined appearance across terminals. This supersedes the former exclusive
+setter and bold-precedence policy.
 
-We may emit both blink and flash SGR codes to provide blinking where flash is
-unsupported. This is a proposed emission policy, not a settled portability
-guarantee. The exact behavior of disabling a paired attribute through a fluent
-setter should be specified and tested when implemented.
+Blink/flash pairing and possible emission of both codes remain design questions
+only for our library, where flash is planned. They do not apply to the
+{fmt}-compatible emphasis API.
 
 ### Absolute styles
 
-An absolute style is protected from enclosing style changes. At its boundary,
+`absolute` is part of `feat/StyledText`, not Fluent or a standalone feature.
+It acquires meaning through nested rendering. An absolute style is protected
+from enclosing style changes. At its boundary,
 rendering starts from terminal defaults rather than inheriting the enclosing
 style. Descendants can inherit the absolute node's own style normally.
 Enclosing blending must not penetrate this boundary.
 
 ## `styled_text`
 
-This is a future type; upstream {fmt} does not provide it. Initial work modifies
-the existing `text_style` before adding structured text.
+This is the planned `feat/StyledText` feature; upstream {fmt} does not provide
+it. Its scope includes nested structure, `absolute`, and lazy blending during
+rendering. Initial work modifies the existing `text_style` first; the exact
+required feature dependencies remain to be confirmed.
 
 The current design intention is a `text_style` plus three content alternatives:
 
@@ -279,7 +343,7 @@ Direct construction supplies the new styling API. Using `styled()` with a
 
 ### Lazy blending
 
-Plan this member operation:
+As part of StyledText, plan this member operation:
 
 ```cpp
 styled_text& blend() noexcept;
@@ -312,8 +376,9 @@ use the fixed `terminal_palette` above; cube and gray colors use their conversio
 formulas.
 
 The motivating use is text containing individually emphasized or colored
-phrases, then an enclosing paragraph background, and later an enclosing flash
-style. Preserve the nested structure throughout, with absolute text protected.
+phrases, then an enclosing paragraph background, and later an enclosing emphasis
+style (flash only in our library design). Preserve the nested structure
+throughout, with absolute text protected.
 
 ### Plain text and SGR input
 
@@ -382,9 +447,9 @@ further occurrences have no effect. Colors use replacement semantics: the last
 color in the selected channel wins. There is no blend operator in this grammar.
 Recognize `absolute` anywhere.
 
-Aim for exact `parse_style(to_string(style)) == style` round trips. Parsing
-paired emphasis tokens needs reconciliation with exclusive fluent setters and
-the preservation of combined emphasis bits. Do not silently lose stored state.
+Aim for exact `parse_style(to_string(style)) == style` round trips. Preserve
+bold and faint independently without silently losing either bit. Any blink/flash
+policy for our library must likewise preserve the intended stored state.
 Vocabulary, error handling, and whether internal rendering policy participates
 in serialization remain open.
 

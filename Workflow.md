@@ -53,6 +53,13 @@ Create focused development branches from the agreed `FmtColor` baseline. Use
 conventional lowercase slash prefixes, such as `feat/`, `fix/`, `doc/`, `test/`,
 `build/`, and `refactor/`; other appropriate prefixes are allowed. Use PascalCase
 after the prefix, for example `fix/Termux` or `feat/ConstColor`.
+Record proposed branch names before creating their Git branches. Create a
+branch when implementation begins from the accepted baseline then, avoiding
+repeated rebases of speculative branches. An empty branch is not evidence of
+implementation. Prioritize non-breaking additions for the {fmt}-compatible
+release; keep known breaking work explicit and later. See CppDesign.md for
+the provisional feature plan.
+
 Branches may have dependencies; record those rather than assuming a fixed
 integration order. Branch prefixes describe purpose, not acceptance or approval
 to include a branch on the website. See [Website.md](Website.md) for that policy.

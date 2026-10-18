@@ -53,8 +53,26 @@ No release tag or version bump was created. See BuildAndTest.md for validation
 and its limits, and Website.md for the confirmed website publication.
 The Termux workaround was then accepted and pushed as one further squash commit,
 [`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98).
-Terry reported successful PC and Termux runs of the rebased branch. Website
-version 5 documents both accepted changes; ConstColor remains a candidate.
+Terry reported successful PC and Termux runs of the rebased branch. The website
+documents both accepted changes. ConstColor and TermColorValue remain
+unintegrated candidates with Terry-reported PC and tablet passes.
+
+## Current development plan
+
+Prioritize non-breaking work for the {fmt}-compatible release: `feat/Fluent`,
+then `feat/Palette`. Later breaking candidates are `feat/ConstColor`,
+`refactor/TermColorValue`, and `feat/Blend`; their relative order is open.
+Blend combines explicit blending with strict composition for `|` and `|=`.
+`feat/StyledText` includes `absolute` and lazy nested blending after its required
+foundations; exact dependencies remain open. See
+[CppDesign.md](CppDesign.md#proposed-branches-and-integration-priorities).
+
+Branch names can describe planned work without a created branch. Create them
+when implementation starts to avoid repeated rebases. Website inclusion is
+approved for these six proposals, not acceptance of their implementations.
+
+Both deliverables allow independent bold and faint. Retain conceal and omit
+flash for {fmt}; our C++23-compatible library design replaces conceal with flash.
 
 ## Status and authority
 

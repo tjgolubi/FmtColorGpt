@@ -26,54 +26,47 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
 
-The existing Site was successfully published on October 18, 2026, as
-**version 5**. The Sites publication operation confirmed success and preserved
-the then-owner-only access. Later that day, at Terry's explicit request, access
-was changed to **public**; the Sites access operation confirmed the change.
-Anyone with the URL can now visit. Content and Site version were unchanged by
-the access update. Its published pages are:
+The existing public Site was successfully published on October 18, 2026, as
+**version 6**. The deployment operation confirmed success. Public access was
+verified before publication and preserved; no audience change was requested.
 
 - [Overview and demonstration](https://fmtcolor.ardentokapi66.chatgpt.site/):
-  the two sequential deliverables, their shared styling API and header path,
-  the proposed example, and the styling and rendering design. This page and
-  its demonstration assets remain unchanged.
-- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
-  separate explanations for accepted BuildBash and Termux squash commits,
-  including rationale, implementation, compatibility, and validation limits.
+  distinguish current RGB-OR behavior from the proposed breaking Blend feature;
+  record independent bold/faint bits, the deliverables' conceal/flash difference,
+  and StyledText ownership of absolute and lazy nested blending.
 - [Work in progress](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html):
-  ConstColor is the remaining listed candidate. A short notice directs older
-  Termux links to its accepted explanation.
+  all six approved proposals, Fluent then Palette first, later breaking order
+  open, and StyledText dependencies under review. Planned work is distinguished
+  from implemented candidates. ConstColor and TermColorValue link observed source
+  tips and record Terry's reported PC/tablet passes without inventing test logs.
+- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
+  unchanged explanations for the accepted BuildBash and Termux squash commits.
 
-Accepted commits documented on the integrated-changes page:
+The accepted commits remain
+[`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0)
+and
+[`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98).
+No candidate was integrated or moved into Integrated changes during this update.
+Version 5 previously published the accepted Termux explanation; the later
+public-access change left that content version unchanged.
 
-- [`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0):
-  shared build script, git-cliff configuration, initial fork changelog, and
-  Python bytecode ignore rule. Its two expected Termux test failures are now
-  described as historical and resolved by the subsequent workaround.
-- [`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98):
-  default-OFF, narrowly scoped test skips for Android fdsan conflicts. The
-  explanation records Terry's successful PC and Termux runs after rebase,
-  including the clean PC build, and distinguishes expected individual skips
-  from supplied verbose output. See BuildAndTest.md for validation details.
-
-Only the integrated-changes and WIP pages changed. Local links and anchors
-were checked, and both pages were reviewed in a desktop browser preview.
-The published integrated-changes page was also opened and its accepted Termux
-content confirmed. Overview, downloadable example source, and expected ANSI
-output were preserved. No library tests or proposed-example compilation were
-run for this content-only publication. Actual tablet-device layout was not
-checked.
+Validation: three HTML pages and 46 local links/anchors checked; all six proposal
+entries present. The WIP desktop table and overview content were reviewed in a
+browser preview. Integrated changes, the overview demo, downloadable C++ sample,
+and expected ANSI output were verified unchanged apart from checkout line endings.
+Coordination Markdown links and code fences were checked. No library tests,
+example compilation, CI checks, or actual tablet-layout checks were performed
+for this documentation-only update.
 
 Publication provenance:
 
-- Site source commit: `680f08f751d27b269ee065a353e003c38a919a08`.
-- Saved Site version: 5,
-  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_02c7fc188e048191923dc1ef6256fd7f`.
-- Successful deployment: `appgdep_6ad528e9c80c81918cbba3412073d84e`.
+- Site source commit: `5ad61aa1d15b2aa90834afbd60e1262a51fdfc81`.
+- Saved Site version: 6,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_13eb1171fe848191a574845f7481c4aa`.
+- Successful deployment: `appgdep_6ad5595b43648191994186078a75b560`.
 
-Both accepted changes are in integrated changes, not candidate entries. No
-new candidate-branch website approval was added. The overview's future APIs
-remain proposals, as previously documented.
+The future APIs remain proposals. Approval to describe these six proposals does
+not authorize their implementation, integration, or library pushes.
 
 ## Integrated changes
 
@@ -107,9 +100,10 @@ Use conventional slash prefixes for development branches, such as `feat/`,
 `fix/`, `doc/`, and `test/`, with other appropriate prefixes allowed. A prefix
 describes purpose; it never grants website inclusion automatically.
 
-For each approved branch, explain its goals, current design, implementation and
-testing status, compatibility effects, and known dependencies. Link the branch
-and identify the exact reviewed commit because branch tips can advance.
+For each approved proposal, explain its goals, current design, implementation
+and testing status, compatibility effects, and known dependencies. For existing
+remote branches, link the branch and identify the exact reviewed commit because
+tips can advance. Label planned work without inventing source links or commits.
 
 List the expected integration order as it becomes known. Label it provisional,
 distinguish planning priority from technical dependencies, and leave undecided
@@ -118,18 +112,32 @@ Integration is conditional: a branch may change or never be accepted. Do not
 present the order as fixed or promise release dates.
 
 Terry approved Termux and ConstColor for inclusion on October 17. Termux is
-now accepted and its explanation has moved to integrated changes. The remaining
-approved candidate is:
+now integrated. On October 18 he approved updating the website with all six
+proposals from the planning discussion:
 
-| Branch | Reviewed tip | Expected order and dependencies |
+| Priority | Proposal | Source / status |
 | --- | --- | --- |
-| `feat/ConstColor` | `87b6cde3224fc368b63cd44545f569b49d7b027c` | Remaining listed candidate; integration position and readiness are not yet confirmed. Baseline refresh and review remain pending. |
+| 1 | `feat/Fluent` | Planned non-breaking setters/getters. Local empty baseline branch exists; no implementation claim or remote branch link. |
+| 2 | `feat/Palette` | Planned non-breaking cube/grayscale palette support. Preserve current operators and review discriminator `10` assumptions. |
+| Later; order open | `feat/ConstColor` | GitHub tip `875850e5a31c5811041fdd14c28675361f919d54`, based on `1c61e624`; breaking candidate. |
+| Later; order open | `refactor/TermColorValue` | GitHub tip `0d104dfd55cd71d42d9048c43890207aa769cf53`, based on `1c61e624`; breaking numeric contract. |
+| Later; order open | `feat/Blend` | Planned explicit blending plus breaking strict composition for both `|` and `|=`. |
+| After required foundations | `feat/StyledText` | Planned nested text, `absolute`, and lazy blending. Exact dependencies remain open. |
 
-The published ConstColor entry retains its earlier reviewed source and upstream
-baseline. No Termux code dependency was found in that review, but it has not
-been re-reviewed or rebased as part of the accepted build-tooling and Termux
-integrations. No other candidate branch has website inclusion approval recorded
-here. Branch history must be checked again before further integration work.
+Fluent before Palette is a planning priority rather than a hard technical
+dependency. Neither requires ConstColor or terminal-color renumbering. The
+three breaking branches have no agreed relative order. Do not infer acceptance
+from the table's row order or claim StyledText requires every preceding branch.
+Create planned branches only when work begins from the then-accepted baseline.
+Link existing remote candidates; planned names need only page anchors until
+their branches exist.
+
+Terry reported PC and tablet passes for both implemented candidates; exact
+tested SHAs and fresh logs were not supplied. The observed source tips are
+separate from that report. Source was inspected during this update, but no new
+assistant library tests or CI verification were performed. See BuildAndTest.md.
+Documentation, migration notes, changelog, compatibility, and final acceptance
+review remain pending.
 
 When a branch is accepted, move its explanation to integrated changes, update
 it for the final accepted behavior and validation, and link the resulting
@@ -190,9 +198,14 @@ subtrees, and owned child nodes. It distinguishes strict `text_style::operator|`
 composition from fluent replacement and sequential ANSI SGR updates. Unspecified
 channels retain surrounding values in ordinary rendering; an absolute style
 starts its terminal SGR sequence with `ESC[0;...m` to reset before applying its
-attributes. Possible blending through `operator|=`, including automatic RGB
-promotion, remains an exploratory idea rather than an agreed API. Keep those
-distinctions when revising the explanations.
+attributes. Strict composition for both `|` and `|=` is a planned breaking change in
+`feat/Blend`, introduced together with explicit blending operations. Current
+{fmt} still ORs overlapping RGB colors and rejects same-channel terminal-color
+conflicts. Preserve this distinction in the overview. Bold and faint are
+independent with no library precedence in both deliverables. {fmt} retains
+conceal without flash; our C++23-compatible library design replaces conceal
+with flash. `absolute` and lazy nested blending belong to StyledText. Exact
+style-blending rules remain open.
 
 ## Maintenance from desktop, Android, or the web
 

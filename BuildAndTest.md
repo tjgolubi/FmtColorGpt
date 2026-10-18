@@ -227,6 +227,28 @@ and warning-bearing skips explain the workaround; no additional user-facing
 and removes Termux from the candidate list. No release tag or version bump
 was created.
 
+## Candidate validation reported October 18, 2026
+
+Terry reported that both `feat/ConstColor` and `refactor/TermColorValue` pass
+on his PC and tablet. Current GitHub branch tips observed during this update:
+
+| Candidate | Observed GitHub tip | Source status |
+| --- | --- | --- |
+| `feat/ConstColor` | `875850e5a31c5811041fdd14c28675361f919d54` | Named RGB constants and explicit packed conversions; source/tests inspected. |
+| `refactor/TermColorValue` | `0d104dfd55cd71d42d9048c43890207aa769cf53` | Terminal-color indices 0–15 mapped to existing SGR output; source inspected. |
+
+Both branch histories include integrated baseline `1c61e624`. The report does
+not identify the exact tested commits, compiler versions, configurations,
+commands, counts, or individual skips. Do not attribute the passes to a precise
+SHA without that evidence. No new assistant test run or GitHub Actions result
+was established during this documentation update. Both candidates remain
+unintegrated and require acceptance review; passes do not prove API, ABI, or
+stored-data compatibility.
+
+The inherited GitHub Actions workflows provide additional compiler/platform
+coverage. Whether Actions is enabled and whether these tips have passing runs
+must be checked separately; PC/tablet passes are not CI passes.
+
 ## Troubleshooting lessons
 
 On Termux, a global MkDocs launcher still pointed to removed Python 3.12 after
