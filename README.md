@@ -66,10 +66,32 @@ commit, [`f913e54c`](https://github.com/tjgolubi/fmt/commit/f913e54cf41c8aafae8c
 comments, the `/doc/color/` guide and reference pages, and GitHub Pages
 publication. The documentation describes the existing API; it does not
 implement the proposed styling extensions. The Pages build and deployment
-succeeded. Public Site version 12 now links prominently to the documentation
+succeeded. Public Site version 12 added prominent links to the documentation
 from its homepage and every page's navigation. See [Website.md](Website.md)
 for publication provenance and [BuildAndTest.md](BuildAndTest.md) for validation.
 No release tag or version bump was created for this integration.
+
+## Candidate documentation update, October 19, 2026
+
+Terry rebased both implemented candidates above accepted documentation baseline
+`f913e54c`. Documentation is now committed and pushed on each feature branch:
+
+- `feat/ConstColor`: [`4cf51e13`](https://github.com/tjgolubi/fmt/commit/4cf51e134222dd4b1692fa455fb5ffb5f6f01b5f),
+  covering namespace RGB constants, explicit packed conversions, migration,
+  and reference/swatch generation.
+- `refactor/TermColorValue`: [`7c54b595`](https://github.com/tjgolubi/fmt/commit/7c54b59558da188a390f7f1af68b5ac8e7b87902),
+  covering palette indices 0–15, SGR mappings, and compatibility guidance.
+
+GitHub confirmed both tips during the website update. Terry reported successful
+compilation, tests, and documentation generation after his final revisions.
+The assistant's narrower checks and the limits of the reported results are
+recorded in [BuildAndTest.md](BuildAndTest.md). Both candidates remain
+unintegrated; no new release tag or version bump was created.
+
+Public Site version 13 publishes the updated candidate explanations, commit
+links, branch-documentation links, and validation records. It preserves the
+provisional integration order and public access. See [Website.md](Website.md)
+for publication provenance and the Windows/MSYS publishing lessons.
 
 ## Current development plan
 

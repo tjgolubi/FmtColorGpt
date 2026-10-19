@@ -336,6 +336,64 @@ build, runtime-suite rerun, tablet result, or CI result.
 Public Site version 9 published this result before this coordination update.
 Earlier reported PC/tablet passes remain separate from this focused check.
 
+## Rebased candidate documentation, October 19, 2026
+
+Both candidates now include accepted baseline `f913e54c`. The documentation
+commits below were reviewed in this chat, committed and pushed by Terry, and
+confirmed through GitHub during the subsequent website update:
+
+| Branch | Verified GitHub tip | Documentation scope |
+| --- | --- | --- |
+| `feat/ConstColor` | [`4cf51e13`](https://github.com/tjgolubi/fmt/commit/4cf51e134222dd4b1692fa455fb5ffb5f6f01b5f) | Namespace RGB constants, explicit packed conversions, migration examples, named-color guide, and reference/swatch handler. |
+| `refactor/TermColorValue` | [`7c54b595`](https://github.com/tjgolubi/fmt/commit/7c54b59558da188a390f7f1af68b5ac8e7b87902) | Zero-based palette indices, all 16 foreground/background SGR mappings, numeric migration, and binary/persistence guidance. |
+
+ConstColor's rebased implementation and test commits are `97da1b1d` and
+`f53a7767`. TermColorValue's are `26462caa` and `38a20f6d`; the latter retains
+the four-color boundary and black-presence checks previously tested at
+`4b8ae4eb`. These are candidate branch commits, not accepted integrations.
+
+### Assistant checks during documentation preparation
+
+Using the existing MSYS documentation environment, the assistant successfully
+built the fork publication configuration for both branches:
+
+```bash
+export PATH="$(pwd)/build/venv/bin:/usr/bin:$PATH"
+PYTHONPATH=support/python python -m mkdocs build \
+  --config-file support/mkdocs-pages.yml \
+  --site-dir "$(pwd)/build/doc-html" --no-directory-urls
+```
+
+For ConstColor, the assistant also built and ran the complete focused
+`color-test` executable successfully, verified the generated declarations show
+`explicit` for both packed conversions, inspected the rendered reference, and
+checked that all 141 unique named-color swatches match the source RGB values.
+These checks preceded Terry's final wording revisions. The assistant did not
+rerun the full library suite or claim the historical C++11 header check for
+the new tip. For TermColorValue, the assistant verified documentation generation
+and whitespace during preparation; no fresh assistant runtime test run was
+performed. The known upstream syntax-anchor and Material notices remained
+nonfatal. Review of Terry's revisions found one comment typo, which he corrected.
+
+### Terry's reported validation
+
+After his ConstColor wording revisions, Terry reported successful compilation,
+tests, and documentation generation before committing and pushing. For
+TermColorValue, he first reported that the rebase passed all tests and built
+documentation, then reported successful compilation, all tests, and documentation
+generation again after his documentation revisions and typo correction.
+
+These are user-reported results, not new assistant full-suite runs. Exact
+commands, toolchain/configuration, counts, individual skips, and a final tested
+SHA were not supplied. The subsequently verified GitHub tips are recorded
+separately above. Earlier PC/tablet reports and October 18 focused checks remain
+historical evidence; no fresh tablet or CI result is established by this update.
+
+User-facing documentation and migration guidance are now present on both
+branches. Changelog preparation, compatibility acceptance, and final integration
+review remain pending. Neither branch was integrated into `FmtColor` during
+this chat. Public Site version 13 publishes this status; see Website.md.
+
 ## Planned Fluent, VarColor, and Palette checks
 
 The agreed implementation order is emphasis-only Fluent, color-focused VarColor,
@@ -373,6 +431,11 @@ and the output-directory check failed. Check the provenance and path conventions
 of each interacting executable. A native Windows compiler does not require
 every documentation or shell tool to be replaced with its UCRT64 counterpart.
 Do not change the whole toolchain to fix one documentation dependency.
+
+Sites publication uses a different Windows Git/path environment from the
+MSYS library and documentation build. See
+[Website.md](Website.md#windows-publishing-environment); do not change the
+library toolchain to repair a Sites packaging problem.
 
 ## Recording validation
 

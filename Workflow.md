@@ -27,6 +27,13 @@ Codex's bundled Windows Git. Do not use that bundled Git for these repositories.
 Use the existing MSYS2 Git identity and SSH configuration for commits and
 network operations rather than replacing them with Windows-specific settings.
 
+This requirement applies to Terry's source and coordination repositories, not
+the separate Sites source checkout. On this PC, the Sites Node helper needs
+native Windows Git so that checkout paths use Windows syntax. Keep native Git
+ahead of MSYS2 tools in the helper's process-local PATH. Do not change the
+source repositories' Git configuration to accommodate Sites. See
+[Website.md](Website.md#windows-publishing-environment) for Bash and tar setup.
+
 ## Agree, implement, verify
 
 Discuss and agree on one change, implement it on a focused branch, test it,
@@ -37,6 +44,14 @@ Questions and tentative proposals are discussion. Explicit instructions
 authorize the requested action. Do not treat a possible future feature as an
 approved current task. Explain proposed changes before making them. Obtain
 Terry's approval before merging or pushing.
+
+On October 19, Terry explicitly clarified: make no changes unless he
+specifically requests them. A review, status report, or discussion does not
+authorize edits, branch switches, commits, or pushes. Read-only inspection can
+support the discussion. A requested documentation or website update authorizes
+the edits needed for that update; website publication follows Website.md.
+Do not extend that request into unrelated coordination or repository changes.
+This clarification supersedes broader standing maintenance wording.
 
 Before editing, inspect the actual branch, commit, working tree, source, and
 tests. Preserve unrelated work. Attached headers and old handoffs may be stale;

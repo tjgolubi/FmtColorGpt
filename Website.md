@@ -26,6 +26,47 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
 
+The public Site was successfully published on October 19, 2026, as **version 13**,
+before this coordination update. The deployment tool confirmed success and the
+public URL. The existing public audience was verified before publication and
+preserved.
+
+The [Work in progress](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html)
+page now records both rebased candidates above accepted baseline `f913e54c`:
+
+- [ConstColor](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html#constcolor)
+  links verified documentation tip `4cf51e13`, describes namespace constants,
+  explicit packed conversions, migration, and reference/swatch generation,
+  and links its committed branch guide.
+- [TermColorValue](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html#termcolorvalue)
+  links verified documentation tip `7c54b595`, describes the numeric/SGR reference
+  and migration guidance, refreshes the rebased boundary-test link, and links
+  its committed branch guide. The branch name is singular, `TermColorValue`.
+
+Both entries distinguish Terry's newly reported successful build, tests, and
+documentation generation from earlier PC/tablet reports and focused assistant
+checks. The old C++11 check is explicitly historical. User-facing documentation
+is no longer listed as pending; changelog preparation, compatibility acceptance,
+and final integration review remain pending. Neither candidate is integrated.
+
+Validation checked local HTML links, anchors, unique IDs, and whitespace.
+A local browser preview and screenshot inspected the updated ConstColor layout;
+the browser's page text confirmed both revised sections and link destinations.
+No new library tests or tablet-layout checks were performed during publication.
+The existing integration plan, other proposal sections, homepage, Integrated
+changes page, demonstration, and assets were preserved. The successful native
+deployment result confirms publication; no separate live-content browser check
+is recorded for version 13.
+
+Publication provenance:
+
+- Site source commit: `f2c34b248dfd9c360c6169bea9bc70482d2e42d1`.
+- Saved Site version: 13,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_0c9633664fb8819198efb88b07ffa89d`.
+- Successful deployment: `appgdep_6ad659cdb1008191848fd63422c58b62`.
+
+### Version 12
+
 The public Site was successfully published on October 19, 2026, as **version 12**.
 The deployment operation confirmed success and the live homepage was checked.
 Public access was preserved. A prominent **Read the user documentation** button
@@ -210,7 +251,8 @@ Terry approved Termux and ConstColor for inclusion on October 17. Termux is
 now integrated. On October 18 he approved updating the website with all six
 proposals from the planning discussion. The table below now reflects the revised
 coordination plan, including ConvertColors, published as Site version 10 on
-October 18:
+October 18, with candidate documentation status refreshed in version 13 on
+October 19:
 
 | Priority | Proposal | Source / status |
 | --- | --- | --- |
@@ -218,8 +260,8 @@ October 18:
 | 2 | `feat/VarColor` | Planned color variant, sentinel, constructor, fluent color operations, presence aliases, and clearing. C++17+ variant APIs; existing older-mode APIs preserved. |
 | 3 | `feat/Palette` | Planned cube/grayscale extension of VarColor. Preserve current operators and review discriminator `10` assumptions. |
 | Order open | `feat/ConvertColors` | Planned branch for the existing explicit RGB-promotion design and specified Xterm terminal palette. Exact APIs and dependencies remain open; scope unchanged. |
-| Later; order open | `feat/ConstColor` | GitHub tip `875850e5a31c5811041fdd14c28675361f919d54`, based on `1c61e624`; breaking candidate. |
-| Later; order open | `refactor/TermColorValue` | GitHub tip `4b8ae4ebf2fa4640341845ec5b2983f9e69be9fb`, based on `1c61e624`; breaking numeric contract with added boundary tests and a verified MSYS color-test pass. |
+| Later; order open | `feat/ConstColor` | Verified GitHub tip `4cf51e134222dd4b1692fa455fb5ffb5f6f01b5f`, based on `f913e54c`; breaking candidate with committed migration documentation and updated reported validation. |
+| Later; order open | `refactor/TermColorValue` | Verified GitHub tip `7c54b59558da188a390f7f1af68b5ac8e7b87902`, based on `f913e54c`; breaking numeric contract with retained boundary tests, committed migration guidance, and updated reported validation. |
 | Later; order open | `feat/Blend` | Planned explicit blending plus breaking strict composition for both `|` and `|=`. |
 | After required foundations | `feat/StyledText` | Planned nested text, `absolute`, and lazy blending. Exact dependencies remain open. |
 
@@ -239,8 +281,11 @@ identify exact tested SHAs or provide fresh logs. Separately, TermColorValue's
 new boundary checks passed in the assistant's MSYS color-test run and were
 committed as `4b8ae4eb`. A tablet run of that new test commit and CI results
 have not been reported. See BuildAndTest.md for the evidence and limits.
-Documentation, migration notes, changelog, compatibility, and final acceptance
-review remain pending.
+The October 19 branch documentation now supplies migration guidance, and Terry
+reported successful compilation, tests, and documentation generation after his
+revisions. No new tablet or CI result was established. See BuildAndTest.md for
+the newer evidence separately from the October 18 results. Changelog preparation,
+compatibility acceptance, and final integration review remain pending.
 
 When a branch is accepted, move its explanation to integrated changes, update
 it for the final accepted behavior and validation, and link the resulting
@@ -337,8 +382,11 @@ style-blending rules remain open.
 
 ## Maintenance from desktop, Android, or the web
 
-Terry authorizes the assistant to handle routine website maintenance and
-publication during project work, following agreed content decisions. Explain
+When Terry specifically requests a website update, the assistant handles the
+required source edits and publication following agreed content decisions.
+Do not change the website merely because related project work suggests an
+update; Terry clarified on October 19 that changes require a specific request.
+Explain
 the resulting content changes and provide usable links. Terry does not need to
 manage the website's source files, build tools, or publishing mechanics.
 Ask for missing content decisions when needed, and explain briefly if a system
@@ -385,6 +433,41 @@ Keep credentials out of documents, chat output, repository files, and handoffs.
 The published Site remains available independently of this PC's local checkout
 or preview server. Avoid concurrent edits from multiple sessions; retrieve the
 latest source again when resuming after another assistant's update.
+
+## Windows publishing environment
+
+Use native Windows Git for the separate Sites checkout when running its Node
+source helper on this PC. Use MSYS2 Git for Terry's `fmt` and `FmtColorGpt`
+repositories, as required by Workflow.md. Keep the environments separate.
+
+Version 13 exposed three distinct setup issues:
+
+1. The Sites packager invokes `bash`; the initial process PATH lacked Bash.
+   Source commit/push succeeded before archive creation failed. Preserve that
+   committed source and retry packaging rather than creating a replacement Site.
+2. Prepending MSYS2's `usr/bin` also selected MSYS2 Git, which returned a path
+   such as `/c/Users/...`. The Windows Node helper could not use that path for
+   checkout validation. Native Windows Git must remain ahead of MSYS2 tools.
+3. GNU tar interpreted the colon in a Windows archive path as a remote-host
+   separator. Process-local `TAR_OPTIONS=--force-local` fixed that archive step.
+
+The successful PowerShell setup put the bundled native Git directory first,
+then `C:\msys64\usr\bin`, while retaining the remaining PATH. It set
+`$env:TAR_OPTIONS = '--force-local'` and ran the normal Sites source helper
+with the existing Site ID, opening result, and archive destination. Native Git
+was observed under Codex's runtime `dependencies/native/git/cmd`; locate the
+current runtime path instead of assuming that installation path is permanent.
+Use forward slashes in an absolute Windows archive path, such as `C:/.../site.tar.gz`.
+Scope these environment changes to the helper process; do not change global
+Git settings or the source repositories' Git identity/SSH setup.
+
+Continue using the supported Sites helper to own source synchronization,
+commit/push, and packaging. Pass its verified project ID, commit, and archive
+to the native save/deploy operations. The successful retry reused source commit
+`f2c34b24`, saved version 13, and deployed with public access unchanged.
+Do not claim deployment until the native tool confirms success. A Git push or
+a successful archive alone does not publish the website. Keep credentials in
+memory and pass them through the helper's hidden stdin, never files or output.
 
 ## Access and external links
 
