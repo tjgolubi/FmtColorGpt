@@ -70,21 +70,32 @@ until an explicitly reviewed breaking feature changes it.
 
 | Priority | Proposed branch | Scope and compatibility |
 | --- | --- | --- |
-| 1 | `feat/Fluent` | Add fluent setters and getters for existing colors and emphasis. Preserve existing APIs, operators, rendering, layout, and supported language modes. |
-| 2 | `feat/Palette` | Add `cube_color` and `gray_color` with foreground/background and fluent support. Use discriminator `10` while preserving existing encodings and composition behavior. Intended as a non-breaking addition. |
+| 1 | `feat/Fluent` | Add emphasis-only fluent setters and boolean getters for all eight existing attributes. Preserve unrelated bits, colors, existing APIs, rendering, layout, and supported language modes. |
+| 2 | `feat/VarColor` | Add `no_color_t`/`no_color`, C++17+ `var_color`, color constructors, fluent foreground/background setters and getters, presence aliases, and clearing. Build on accepted Fluent. |
+| 3 | `feat/Palette` | Extend VarColor with `cube_color` and `gray_color`, including free and fluent foreground/background support. Use discriminator `10` while preserving existing encodings and composition behavior. Intended as a non-breaking addition. |
+| Order open | `feat/ConvertColors` | Give the existing explicit color-to-RGB conversion design and specified Xterm `terminal_palette` a dedicated branch. Exact APIs and dependencies remain open; no new conversion scope. |
 | Later; relative order open | `feat/ConstColor` | Replace the named-color enum with RGB constants and make packed RGB conversions explicit. Breaking candidate; implemented on its branch. |
 | Later; relative order open | `refactor/TermColorValue` | Change terminal-color values from SGR numbers to 0–15 while preserving symbolic styling and emitted SGR. Breaking numeric-value contract; implemented on its branch. |
 | Later; relative order open | `feat/Blend` | Introduce RGB and style blending together with breaking strict-composition semantics for both `operator|` and `operator|=`. Include migration guidance. |
 | After required foundations | `feat/StyledText` | Structured nested text, `absolute`, and lazy blending during rendering. Exact dependencies and compatibility effects remain to be reviewed. |
 
-Fluent before Palette is a planning priority, not a necessary code dependency.
-Neither requires ConstColor or renumbered terminal colors. Palette must support
-the existing operator behavior until Blend deliberately changes it. StyledText
+The agreed additive order is Fluent, VarColor, then Palette. Implement VarColor
+on the accepted Fluent baseline; Palette then extends its color alternatives
+and operations. VarColor remains usable without Palette, so users adopting the
+color variant alone do not need to remove palette-specific handling. None of
+these features requires ConstColor or renumbered terminal colors. Preserve
+existing operator behavior until Blend deliberately changes it. StyledText
 uses style semantics and color support; its precise branch dependencies remain
 open. Binary serialization and the later standard-format refactor are not
 prerequisites for these additions.
 
-These are approved website proposals, not integration approvals. Create branches
+`feat/ConvertColors` names the existing conversion design, with no newly agreed
+integration position. Conversions involving palette types require those types
+when implemented; exact branch dependencies remain subject to review. It is
+separate from the color types and from Blend operations using RGB promotion.
+
+The revised eight-proposal plan was approved for website inclusion and published
+as public Site version 10, not accepted for integration. Create branches
 when implementation begins from the accepted baseline at that time; do not
 create speculative branches merely to populate the plan. A local Fluent branch
 was created early at the unchanged baseline; that does not mean implementation
@@ -98,6 +109,10 @@ The breaking `feat/ConstColor` candidate replaces `enum class color` with
 `namespace color` containing named RGB
 constants. Use decimal `rgb{red, green, blue}` initializers, preserving the
 existing names and values. Keep the constants in `color.h` for this change.
+The additions support C++11: `FMT_INLINE_VARIABLE` becomes empty before C++17,
+leaving namespace-scope constexpr RGB constants. A strict C++11 header syntax
+check with MSYS GCC 15.3.0 passed at `875850e5`; this does not establish the
+oldest working compiler release. See BuildAndTest.md for the command and limits.
 This preserves common expressions such as `fg(color::red)`, but intentionally
 breaks code that uses `fmt::color` as a type or depends on its enum conversions.
 
@@ -132,6 +147,13 @@ offering the other styling extensions.
 This is a contingency for upstream review, not a claim that upstream has
 already requested or accepted either representation. Code using symbolic
 terminal-color names and styling operations should work with either encoding.
+
+### Color conversions: `feat/ConvertColors`
+
+The planned `feat/ConvertColors` branch owns the existing conversion design
+below, including the specified terminal palette. Assigning the branch name
+adds no conversion scope or API decisions. Explicit RGB promotion is planned;
+nearest-palette demotion remains a possible later extension.
 
 Plan explicit promotion from every supported color type to RGB using the
 following `terminal_palette`.  `terminal_palette` was selected because Xterm is
@@ -187,20 +209,68 @@ Do not expose the in-memory representation as a permanent public contract.
 
 ### Composition and replacement
 
-The additive `feat/Fluent` proposal supplies fluent setters and getters.
-Foreground and background setters replace only their channel; emphasis setters
-toggle their own bit. Existing getters, free `fg()`/`bg()`, constructors,
-operators, rendering, and object layout remain available with existing behavior.
+The additive work is split into emphasis-only `feat/Fluent` and color-focused
+`feat/VarColor`, followed by `feat/Palette`. Existing getters, free `fg()`/`bg()`,
+constructors, operators, rendering, and object layout retain their behavior.
 Keep `constexpr` and upstream language-compatibility provisions where feasible.
-Naming, chaining return types, and clearing colors remain to be settled.
-Making the private packed-value constructor explicit is a small related cleanup
-to include with another change, adjusting internal direct construction; it does
-not warrant its own branch.
+
+Fluent adds `bold(bool enabled = true) -> text_style&` and
+`is_bold() const -> bool`, with the same pattern for `faint`, `italic`,
+`underline`, `blink`, `reverse`, `conceal`, and `strikethrough`. Setters mutate
+the object, return `*this`, and change only their own bit. Boolean getters
+report false for unset bits, including an empty style. These operations are
+`noexcept`, retain supported older-language modes, and use the appropriate
+upstream constexpr macros. Fluent adds no foreground/background operations.
+
+### Variant color API
+
+VarColor introduces public `fmt::no_color_t` and `fmt::no_color` across supported
+language modes, using upstream compatibility provisions for the constant.
+For C++17 and later, provide:
+
+```cpp
+using var_color = std::variant<no_color_t, terminal_color, rgb>;
+```
+
+The first alternative ensures `var_color{}` means unspecified. No color is
+distinct from RGB black or terminal black; do not use `std::monostate` as the
+public sentinel. Guard the variant and variant-based APIs for C++17+, including
+the required standard header. Existing color APIs remain available in older modes.
+
+The agreed constructor direction is:
+
+```cpp
+text_style(var_color fgc, var_color bgc = no_color,
+           emphasis emp = emphasis{});
+```
+
+Keep the first argument required so the existing default and emphasis
+constructors remain unambiguous. Background-only construction uses
+`text_style{no_color, terminal_color::blue}`. Before ConstColor is integrated,
+named enum colors require explicit wrapping, for example `rgb{color::red}`;
+do not add a direct named-enum alternative to the variant.
+
+Provide fluent member `fg()`/`bg()` setters and const value getters, plus
+`has_fg()`/`has_bg()` aliases for existing presence checks. Color setters replace
+only their own channel and return `text_style&`; preserve the other channel and
+all emphasis. The variant getters report `no_color_t` for unspecified channels
+without requiring a presence check. Existing `get_foreground()` and
+`get_background()` keep their existing preconditions and return types.
+Passing `no_color` clears the selected channel to unspecified; it does not
+store a terminal-reset instruction. The sentinel and clearing syntax should
+also work in older modes without exposing `std::variant` there. Exact overloads,
+including ambiguity avoidance for RGB/terminal arguments, remain subject to
+implementation review. Separate `clear_fg()`/`clear_bg()` convenience methods
+have not been settled.
+
+Make the private packed-value constructor explicit with VarColor and adjust
+affected internal construction. This related cleanup needs no separate branch.
+Palette subsequently adds its alternatives and support to this color API.
 
 Current {fmt} `operator|` and `operator|=` OR overlapping RGB bits. They reject
 a terminal color overlapping another specified color in the same channel;
 terminal foreground plus background or emphasis still composes normally.
-Preserve this behavior through Fluent and Palette.
+Preserve this behavior through Fluent, VarColor, and Palette.
 
 The breaking `feat/Blend` proposal introduces standalone RGB `blend()` and
 fluent `text_style::blend(text_style)` together with strict composition for both

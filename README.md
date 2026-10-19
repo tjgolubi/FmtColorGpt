@@ -60,16 +60,22 @@ unintegrated candidates with Terry-reported PC and tablet passes.
 ## Current development plan
 
 Prioritize non-breaking work for the {fmt}-compatible release: `feat/Fluent`,
-then `feat/Palette`. Later breaking candidates are `feat/ConstColor`,
-`refactor/TermColorValue`, and `feat/Blend`; their relative order is open.
+then `feat/VarColor`, then `feat/Palette`. Fluent covers emphasis only; VarColor
+covers color values, constructors, and fluent color operations. Palette extends
+VarColor with cube/grayscale alternatives. Later breaking candidates are
+`feat/ConstColor`, `refactor/TermColorValue`, and `feat/Blend`; their relative
+order is open. `feat/ConvertColors` names the existing explicit RGB-promotion
+work using the specified Xterm palette; its integration position remains open.
 Blend combines explicit blending with strict composition for `|` and `|=`.
 `feat/StyledText` includes `absolute` and lazy nested blending after its required
 foundations; exact dependencies remain open. See
 [CppDesign.md](CppDesign.md#proposed-branches-and-integration-priorities).
 
 Branch names can describe planned work without a created branch. Create them
-when implementation starts to avoid repeated rebases. Website inclusion is
-approved for these six proposals, not acceptance of their implementations.
+when implementation starts to avoid repeated rebases. The revised eight-proposal
+plan, including ConvertColors, was published as public Site version 10 on
+October 18, 2026, before this coordination update. Website inclusion does not accept an
+implementation or authorize integration. See [Website.md](Website.md).
 
 Both deliverables allow independent bold and faint. Retain conceal and omit
 flash for {fmt}; our C++23-compatible library design replaces conceal with flash.

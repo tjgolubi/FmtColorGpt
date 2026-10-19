@@ -26,7 +26,65 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
 
-The existing public Site was successfully published on October 18, 2026, as
+The public Site was successfully published on October 18, 2026, as **version 10**
+before this coordination update. The deployment operation confirmed success.
+Public access was verified before publication and preserved.
+
+Version 10 adds `feat/ConvertColors` to the overview and Work in progress plan,
+with a dedicated section for the existing explicit RGB-promotion design.
+The section reproduces all 16 specified Xterm `terminal_palette` entries
+unchanged. Nearest-palette demotion remains a possible later extension.
+This update names a feature branch for existing design work; it does not
+expand conversion scope, settle API signatures, or assign a new integration
+position. The initial order remains Fluent, VarColor, Palette.
+
+Validation checked local links, anchors, unique IDs, and exact agreement with
+the design's palette. A local browser preview confirmed the new section.
+Existing implementation-status and validation records, Integrated changes,
+styles, and demo assets were preserved. No library tests were rerun and no
+ConvertColors Git branch or library implementation was created.
+
+Publication provenance:
+
+- Site source commit: `5181d6a04e8a4f233cd7f83015972dc4db8423bf`.
+- Saved Site version: 10,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_ec85999679c881919c9459cd74371270`.
+- Successful deployment: `appgdep_6ad5790873708191b5c5fe79ab64cc33`.
+
+### Version 9
+
+The public Site was successfully published on October 18, 2026, as **version 9**
+before this coordination update. The deployment operation confirmed success.
+Public access was verified before publication and preserved.
+
+Version 9 updates the overview and Work in progress with the agreed order
+**Fluent, VarColor, Palette**. Fluent covers emphasis only; VarColor provides
+the color variant, sentinel, constructor, fluent color operations, presence
+aliases, and clearing. Palette subsequently extends VarColor, keeping the base
+variant usable independently of palette enhancements. The website distinguishes
+agreed API directions from unresolved overload details and implementation status.
+
+The ConstColor section records the strict C++11 header syntax check at
+`875850e5` with MSYS GCC 15.3.0, including its limits. It does not claim an
+oldest working compiler release or a new runtime-suite/tablet/CI result.
+See BuildAndTest.md for the exact command. No library candidate was integrated.
+
+Validation for this content update checked all local links and anchors and
+duplicate IDs. A local browser preview confirmed the revised content and the
+Work in progress page layout. Integrated changes, demonstration assets, and
+existing styles were preserved. No new library test run or device-layout check
+was performed during publication.
+
+Publication provenance:
+
+- Site source commit: `b77dec75e16e47465aef4bae5da972327ffa5427`.
+- Saved Site version: 9,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_92e04a7a71908191bb380af87ad80dd1`.
+- Successful deployment: `appgdep_6ad5750c24c881919b84b0642dc79468`.
+
+### Version 8 and earlier
+
+The public Site was previously published on October 18, 2026, as
 **version 8**. The deployment operation confirmed success. Public access was
 verified before publication and preserved; no audience change was requested.
 
@@ -80,8 +138,8 @@ Publication provenance:
   `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_5a7e1afa8d3c8191b0415e8ced2bcdcf`.
 - Successful deployment: `appgdep_6ad563e89a14819189221a1771067add`.
 
-The future APIs remain proposals. Approval to describe these six proposals does
-not authorize their implementation, integration, or library pushes.
+Future APIs remain planned work. Approval to describe proposals does not
+authorize their implementation, integration, or library pushes.
 
 ## Integrated changes
 
@@ -128,19 +186,26 @@ present the order as fixed or promise release dates.
 
 Terry approved Termux and ConstColor for inclusion on October 17. Termux is
 now integrated. On October 18 he approved updating the website with all six
-proposals from the planning discussion:
+proposals from the planning discussion. The table below now reflects the revised
+coordination plan, including ConvertColors, published as Site version 10 on
+October 18:
 
 | Priority | Proposal | Source / status |
 | --- | --- | --- |
-| 1 | `feat/Fluent` | Planned non-breaking setters/getters. Local empty baseline branch exists; no implementation claim or remote branch link. |
-| 2 | `feat/Palette` | Planned non-breaking cube/grayscale palette support. Preserve current operators and review discriminator `10` assumptions. |
+| 1 | `feat/Fluent` | Planned emphasis-only setters/getters. Local empty baseline branch exists; no implementation claim or remote branch link. |
+| 2 | `feat/VarColor` | Planned color variant, sentinel, constructor, fluent color operations, presence aliases, and clearing. C++17+ variant APIs; existing older-mode APIs preserved. |
+| 3 | `feat/Palette` | Planned cube/grayscale extension of VarColor. Preserve current operators and review discriminator `10` assumptions. |
+| Order open | `feat/ConvertColors` | Planned branch for the existing explicit RGB-promotion design and specified Xterm terminal palette. Exact APIs and dependencies remain open; scope unchanged. |
 | Later; order open | `feat/ConstColor` | GitHub tip `875850e5a31c5811041fdd14c28675361f919d54`, based on `1c61e624`; breaking candidate. |
 | Later; order open | `refactor/TermColorValue` | GitHub tip `4b8ae4ebf2fa4640341845ec5b2983f9e69be9fb`, based on `1c61e624`; breaking numeric contract with added boundary tests and a verified MSYS color-test pass. |
 | Later; order open | `feat/Blend` | Planned explicit blending plus breaking strict composition for both `|` and `|=`. |
 | After required foundations | `feat/StyledText` | Planned nested text, `absolute`, and lazy blending. Exact dependencies remain open. |
 
-Fluent before Palette is a planning priority rather than a hard technical
-dependency. Neither requires ConstColor or terminal-color renumbering. The
+Implement Fluent first, VarColor on accepted Fluent, and Palette as an extension
+of VarColor. This keeps VarColor usable independently of palette support.
+ConvertColors names existing design work; its integration position remains open.
+None
+requires ConstColor or terminal-color renumbering. The
 three breaking branches have no agreed relative order. Do not infer acceptance
 from the table's row order or claim StyledText requires every preceding branch.
 Create planned branches only when work begins from the then-accepted baseline.
@@ -158,6 +223,14 @@ review remain pending.
 When a branch is accepted, move its explanation to integrated changes, update
 it for the final accepted behavior and validation, and link the resulting
 commit. Keep the work-in-progress list current.
+
+## Publication before coordination updates
+
+For agreed changes to the website and coordination set, publish and confirm
+the website first, then update coordination documents with the actual version,
+source commit, deployment result, and any remaining verification limits. Preserve
+public access. Distinguish local edits from committed or pushed coordination
+changes; the publication result does not imply a coordination Git push.
 
 ## Relationship to other documentation
 

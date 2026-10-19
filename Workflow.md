@@ -238,6 +238,12 @@ preserving the explanation of the accepted change.
 
 ## Coordination document maintenance
 
+When an agreed change updates both the website and coordination documents,
+publish and verify the website first. Then record its confirmed publication
+status in the coordination set. Do not claim a pending publication succeeded.
+This ordering applies to design-plan updates as well as accepted integrations;
+it does not authorize library integration or Git pushes.
+
 After review and adoption, this repository is the authoritative coordination
 set. Commit substantive decision changes, keep the documents linked, and mark
 proposals and open questions clearly. Avoid maintaining competing authoritative

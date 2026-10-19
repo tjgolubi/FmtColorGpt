@@ -277,6 +277,53 @@ No additional production-code change was made. The candidate remains breaking
 and unintegrated, with Fluent and Palette still ahead of it in the plan.
 Website version 7 records the updated tip and this validation evidence.
 
+## ConstColor C++11 header check
+
+On October 18, 2026, Codex verified the color header from
+`feat/ConstColor` at `875850e5a31c5811041fdd14c28675361f919d54` using
+MSYS GCC 15.3.0 in strict C++11 mode. The check ran from the fmt checkout at
+`1c61e624`, without switching branches:
+
+```bash
+set -o pipefail
+git show feat/ConstColor:include/fmt/color.h |
+  g++ -std=c++11 -pedantic-errors -Iinclude/fmt -x c++ -fsyntax-only -
+```
+
+The command passed. Supporting headers came from the unchanged accepted
+baseline. Namespace-scope constexpr constants and explicit RGB conversions
+require no feature newer than C++11; `FMT_INLINE_VARIABLE` is empty before
+C++17. This check uses a modern compiler in C++11 mode; the oldest working
+GCC, Clang, or MSVC release has not been established. It is not a full library
+build, runtime-suite rerun, tablet result, or CI result.
+
+Public Site version 9 published this result before this coordination update.
+Earlier reported PC/tablet passes remain separate from this focused check.
+
+## Planned Fluent, VarColor, and Palette checks
+
+The agreed implementation order is emphasis-only Fluent, color-focused VarColor,
+then Palette extending VarColor. No Fluent, VarColor, or Palette implementation
+or test run is recorded by this planning update; earlier validation records
+above remain separate.
+
+For Fluent, test all eight emphasis setters/getters, default enabling, explicit
+disabling, chaining and reference return behavior, and preservation of colors
+and unrelated emphasis bits. Include independent bold/faint combinations and
+empty-style queries. Verify relevant older-language and constexpr boundaries.
+
+For VarColor, test the default no-color alternative, color replacement and
+clearing, preservation of the other channel and emphasis, presence aliases,
+constructors, and unchanged existing getter behavior. Check RGB and terminal
+black as specified colors and named-enum use through explicit RGB wrapping.
+Verify C++17+ variant APIs and older-mode sentinel/clearing compatibility.
+Palette later extends these checks for its new alternatives and boundaries.
+
+Run the shared build script with MSYS tools on the PC, keeping FMTCOLOR_SKIP
+OFF, and relevant additional compatibility checks. Record Termux results only
+when actually supplied or run, separately from PC results. Follow Workflow.md
+for documentation, changelog, and acceptance review.
+
 ## Troubleshooting lessons
 
 On Termux, a global MkDocs launcher still pointed to removed Python 3.12 after
