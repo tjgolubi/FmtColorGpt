@@ -27,8 +27,15 @@ repository. Its implementation does not belong in the {fmt} fork.
 ## Current publication
 
 The existing public Site was successfully published on October 18, 2026, as
-**version 7**. The deployment operation confirmed success. Public access was
+**version 8**. The deployment operation confirmed success. Public access was
 verified before publication and preserved; no audience change was requested.
+
+Version 8 corrects the overview's "Terry's projects" link to
+[https://terry.golubiewski.com/prj/](https://terry.golubiewski.com/prj/).
+The old `/projects` destination returned 404. The live homepage links to
+`prj/`, and the corrected destination returned HTTP 200 with the Projects
+page title. This publication changed only that external URL; candidate and
+integrated-change explanations and demonstration assets remain unchanged.
 
 - [Overview and demonstration](https://fmtcolor.ardentokapi66.chatgpt.site/):
   distinguish current RGB-OR behavior from the proposed breaking Blend feature;
@@ -60,7 +67,7 @@ priority is unchanged. No new candidate or design decision was introduced.
 
 Local HTML links and anchors were checked. The overview, Integrated changes,
 other proposal sections, demonstration source, and expected output were
-preserved. This publication did not rerun library tests or perform browser,
+preserved in version 7. That publication did not rerun library tests or perform browser,
 CI, example-compilation, or actual tablet-layout testing. Its PC test result
 comes from the earlier focused test run, recorded in BuildAndTest.md.
 
@@ -68,10 +75,10 @@ Version 6 previously published the revised six-proposal development plan.
 
 Publication provenance:
 
-- Site source commit: `2d883fecb8f9d24880b5896eed792b95f8eb4266`.
-- Saved Site version: 7,
-  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_4979f7755e788191b47c345593e4d32d`.
-- Successful deployment: `appgdep_6ad56133fd68819180481f277360f164`.
+- Site source commit: `4f0076d6efb61dcf720f59ed2a02b633d53938df`.
+- Saved Site version: 8,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_5a7e1afa8d3c8191b0415e8ced2bcdcf`.
+- Successful deployment: `appgdep_6ad563e89a14819189221a1771067add`.
 
 The future APIs remain proposals. Approval to describe these six proposals does
 not authorize their implementation, integration, or library pushes.
