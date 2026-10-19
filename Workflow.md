@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-**Working draft, updated October 18, 2026.** Review and adoption are in progress.
+**Working draft, updated October 19, 2026.** Review and adoption are in progress.
 
 ## Repository roles
 
@@ -46,6 +46,17 @@ untracked. Do not automatically include untracked files in a commit or stash.
 Keep changes minimal and in the existing source style. Change only affected
 test lines; do not perform an unrelated cleanup or convert working declarations
 to `auto`. Prefer `auto` where an affected declaration needs adjustment.
+
+### Line endings
+
+Keep files as they are stored in the repository. Preserve existing CRLF files;
+do not normalize them as part of unrelated edits. Create new text files with
+LF line endings. Windows Git must not automatically convert checked-out files
+to CRLF: use `core.autocrlf=false` and `core.eol=lf`. These values were set in
+Terry's global Git configuration and locally in the `fmt` checkout on October
+19, 2026. Inspect any repository attributes or overriding settings before
+assuming another checkout follows that policy. Do not introduce a blanket
+line-ending conversion or renormalization.
 
 ## Branches and commits
 

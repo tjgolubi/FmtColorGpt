@@ -40,7 +40,10 @@ They are not part of the FmtColor library deliverable.
 - [FmtColorGpt](https://github.com/tjgolubi/FmtColorGpt): this coordination repository.
 - [Upstream {fmt}](https://github.com/fmtlib/fmt): the source baseline.
 - [FmtColor website](https://fmtcolor.ardentokapi66.chatgpt.site): design and
-  implementation explanations. Access depends on its current hosting settings.
+  implementation explanations; public access.
+- [User documentation](https://tjgolubi.github.io/fmt/color/index.html): usage
+  examples and reference for the existing `fmt/color.h` API, published through
+  GitHub Pages from `FmtColor`.
 
 ## Current integration status
 
@@ -56,6 +59,17 @@ The Termux workaround was then accepted and pushed as one further squash commit,
 Terry reported successful PC and Termux runs of the rebased branch. The website
 documents both accepted changes. ConstColor and TermColorValue remain
 unintegrated candidates with Terry-reported PC and tablet passes.
+
+On October 19, 2026, `doc/BaseColor` was integrated and pushed as one squash
+commit, [`f913e54c`](https://github.com/tjgolubi/fmt/commit/f913e54cf41c8aafae8ce951817008e7969d4c59),
+`doc(color): document existing color and text styling APIs`. It adds Doxygen
+comments, the `/doc/color/` guide and reference pages, and GitHub Pages
+publication. The documentation describes the existing API; it does not
+implement the proposed styling extensions. The Pages build and deployment
+succeeded. Public Site version 12 now links prominently to the documentation
+from its homepage and every page's navigation. See [Website.md](Website.md)
+for publication provenance and [BuildAndTest.md](BuildAndTest.md) for validation.
+No release tag or version bump was created for this integration.
 
 ## Current development plan
 

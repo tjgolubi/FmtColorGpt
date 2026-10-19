@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Workflow](Workflow.md) · [Build and test](BuildAndTest.md)
 
-**Working draft, updated October 18, 2026.** This document records intended
+**Working draft, updated October 19, 2026.** This document records intended
 organization, maintenance guidance, and the publication status verified below.
 Later edits must distinguish current observations from future plans.
 
@@ -25,6 +25,28 @@ The website is separate from the library repository and this coordination
 repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
+
+The public Site was successfully published on October 19, 2026, as **version 12**.
+The deployment operation confirmed success and the live homepage was checked.
+Public access was preserved. A prominent **Read the user documentation** button
+appears beside the homepage introduction; a highlighted **Documentation** link
+appears in all three pages' navigation. Both lead to the
+[color documentation](https://tjgolubi.github.io/fmt/color/index.html).
+The homepage's planned-documentation paragraph now describes the published guide.
+
+Validation included a local browser preview, inspection of the published
+homepage, documentation-link destinations, and `git diff --check`. Existing
+design explanations and demo assets were preserved. This website update did
+not run library tests or add an Integrated changes section for `doc/BaseColor`.
+
+Publication provenance:
+
+- Site source commit: `d01a2b18edf224614c84815539ad8068a338934a`.
+- Saved Site version: 12,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_e040aacd06108191a1569db29bddbd34`.
+- Successful deployment: `appgdep_6ad5bdc4a464819181bad64f6b382338`.
+
+### Version 10
 
 The public Site was successfully published on October 18, 2026, as **version 10**
 before this coordination update. The deployment operation confirmed success.
@@ -239,12 +261,29 @@ The website does not supersede it or establish implementation status by itself.
 Source and tests establish implemented behavior. Explicit later decisions from
 Terry take precedence over older draft wording and should be recorded.
 
-The deliverable `/doc/` remains the user documentation entry point. Introduce
-`/doc/color/` for user-facing guidance on the library extensions, with examples,
-screenshots where useful, and developer material where appropriate. Use the
-existing Doxygen/MkDocs/Material tooling. See [BuildAndTest.md](BuildAndTest.md).
-Treat this folder as planned until it exists on the relevant branch; avoid
-publishing links to nonexistent documentation.
+The deliverable `/doc/` remains the user documentation entry point. The
+`/doc/color/` pages now document the existing `fmt/color.h` API: overview,
+colors, emphasis, `text_style`, `styled()`, formatting, printing, and a separate
+named-color swatch page. Doxygen comments in `include/fmt/color.h` supply the
+reference material through the existing MkDocs C++ handler. `doc/api.md` links
+readers to this detailed guide. These pages describe the baseline API rather
+than the proposed extensions.
+
+The accepted `doc/BaseColor` integration is
+[`f913e54c`](https://github.com/tjgolubi/fmt/commit/f913e54cf41c8aafae8ce951817008e7969d4c59).
+The [GitHub Pages deployment](https://github.com/tjgolubi/fmt/actions/runs/39211196126)
+completed successfully. The public entry point is
+[https://tjgolubi.github.io/fmt/color/index.html](https://tjgolubi.github.io/fmt/color/index.html).
+The Sites website links to this guide rather than hosting a second copy.
+
+`.github/workflows/fmtcolor-pages.yml` publishes after pushes to `FmtColor`;
+feature branches and pull requests do not publish. `support/mkdocs-pages.yml`
+inherits the normal configuration and supplies the fork's URL and links.
+Generated HTML is uploaded as a Pages artifact, not committed to source.
+GitHub Pages uses the GitHub Actions source and its `github-pages` environment
+allows `FmtColor`. See `support/fmtcolor-pages.md` in the library repository
+for setup and [BuildAndTest.md](BuildAndTest.md) for build details. The VPS
+remains a backup hosting option; no VPS deployment was performed.
 
 Sites should explain the technical rationale behind changes beyond the
 user-focused documentation. Link to usage documentation rather than maintaining

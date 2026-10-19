@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Workflow](Workflow.md) · [Website](Website.md)
 
-**Initial working draft: October 16, 2026.** Commands below run from the root
+**Working draft, updated October 19, 2026.** Commands below run from the root
 of the `tjgolubi/fmt` checkout unless stated otherwise. A leading `/doc/` in
 project discussion means repository-relative, not a filesystem-root path.
 
@@ -226,6 +226,38 @@ and warning-bearing skips explain the workaround; no additional user-facing
 `/doc/` change was needed. Site version 5 publishes the accepted explanation
 and removes Termux from the candidate list. No release tag or version bump
 was created.
+
+## Accepted baseline color documentation, October 19, 2026
+
+`doc/BaseColor` was integrated as one squash commit,
+[`f913e54c`](https://github.com/tjgolubi/fmt/commit/f913e54cf41c8aafae8ce951817008e7969d4c59),
+on `FmtColor`. Validation during preparation passed all 22 CTest executables
+with MSYS tools, Release/C++23, and `FMTCOLOR_SKIP=OFF`; documentation generation
+also succeeded. This records that completed run, not a fresh run during this
+coordination update. No new Termux validation is recorded for this integration.
+
+The reference pages use Doxygen comments in `include/fmt/color.h`. The handler
+in `support/python/mkdocstrings_handlers/cxx/__init__.py` invokes `doxygen -`
+while MkDocs builds the pages. It also contains the rendering adjustments
+needed by these reference pages. Update comments for shared API descriptions
+and Markdown for page organization, examples, tables, and links.
+
+The fork publication build uses:
+
+```bash
+PYTHONPATH=support/python python -m mkdocs build \
+  --config-file support/mkdocs-pages.yml \
+  --site-dir build/doc-html --no-directory-urls
+```
+
+Run with the pinned Python documentation dependencies and Doxygen available.
+The `FmtColor documentation` GitHub Actions workflow builds on Ubuntu 24.04
+with Python 3.12 and deploys the HTML artifact through GitHub Pages after a push
+to `FmtColor`. The first
+[build and deployment](https://github.com/tjgolubi/fmt/actions/runs/39211196126)
+succeeded. The published overview, emphasis table, and named-color swatches
+were checked in the browser. See [Website.md](Website.md) for the public links
+and the separate Sites publication record.
 
 ## Candidate validation reported October 18, 2026
 
