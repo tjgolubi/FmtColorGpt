@@ -235,19 +235,47 @@ on his PC and tablet. Current GitHub branch tips observed during this update:
 | Candidate | Observed GitHub tip | Source status |
 | --- | --- | --- |
 | `feat/ConstColor` | `875850e5a31c5811041fdd14c28675361f919d54` | Named RGB constants and explicit packed conversions; source/tests inspected. |
-| `refactor/TermColorValue` | `0d104dfd55cd71d42d9048c43890207aa769cf53` | Terminal-color indices 0–15 mapped to existing SGR output; source inspected. |
+| `refactor/TermColorValue` | `4b8ae4ebf2fa4640341845ec5b2983f9e69be9fb` | Terminal-color indices 0–15; source and four-color boundary regression tests inspected; MSYS color-test passed. |
 
 Both branch histories include integrated baseline `1c61e624`. The report does
 not identify the exact tested commits, compiler versions, configurations,
 commands, counts, or individual skips. Do not attribute the passes to a precise
-SHA without that evidence. No new assistant test run or GitHub Actions result
-was established during this documentation update. Both candidates remain
+SHA without that evidence. During the earlier planning update, no assistant test run or GitHub Actions
+result was established. The later boundary-test result is recorded below. Both candidates remain
 unintegrated and require acceptance review; passes do not prove API, ABI, or
 stored-data compatibility.
 
 The inherited GitHub Actions workflows provide additional compiler/platform
 coverage. Whether Actions is enabled and whether these tips have passing runs
 must be checked separately; PC/tablet passes are not CI passes.
+
+### Terminal-color boundary tests, October 18, 2026
+
+Terry requested boundary checks rather than exhaustive tests of all terminal
+colors. Commit
+[`4b8ae4eb`](https://github.com/tjgolubi/fmt/commit/4b8ae4ebf2fa4640341845ec5b2983f9e69be9fb)
+adds 28 lines to `test/color-test.cc` on `refactor/TermColorValue`, retaining
+all existing tests. It checks `black`, `white`, `bright_black`, and
+`bright_white` for numeric values 0, 7, 8, and 15; foreground SGR output
+30, 37, 90, and 97; background output 40, 47, 100, and 107; and black's
+foreground/background presence flags despite its zero numeric value.
+
+The assistant used the MSYS toolchain to run:
+
+```bash
+cmake --build build --target color-test --parallel 4
+ctest --test-dir build -R '^color-test$' --output-on-failure
+```
+
+The complete color-test executable passed with the added boundary checks and
+existing tests. This is a focused PC result, not a new full-suite, tablet,
+older-language, or CI run. Terry committed and pushed the test addition;
+a fetch confirmed the exact remote tip above. Earlier PC/tablet pass reports
+remain separate; a tablet run of this new test commit has not been reported.
+
+No additional production-code change was made. The candidate remains breaking
+and unintegrated, with Fluent and Palette still ahead of it in the plan.
+Website version 7 records the updated tip and this validation evidence.
 
 ## Troubleshooting lessons
 

@@ -27,7 +27,7 @@ repository. Its implementation does not belong in the {fmt} fork.
 ## Current publication
 
 The existing public Site was successfully published on October 18, 2026, as
-**version 6**. The deployment operation confirmed success. Public access was
+**version 7**. The deployment operation confirmed success. Public access was
 verified before publication and preserved; no audience change was requested.
 
 - [Overview and demonstration](https://fmtcolor.ardentokapi66.chatgpt.site/):
@@ -38,7 +38,9 @@ verified before publication and preserved; no audience change was requested.
   all six approved proposals, Fluent then Palette first, later breaking order
   open, and StyledText dependencies under review. Planned work is distinguished
   from implemented candidates. ConstColor and TermColorValue link observed source
-  tips and record Terry's reported PC/tablet passes without inventing test logs.
+  tips and distinguish earlier reported PC/tablet passes from the later verified
+  MSYS boundary-test run for TermColorValue. The other proposal entries are
+  unchanged by version 7.
 - [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
   unchanged explanations for the accepted BuildBash and Termux squash commits.
 
@@ -50,20 +52,26 @@ No candidate was integrated or moved into Integrated changes during this update.
 Version 5 previously published the accepted Termux explanation; the later
 public-access change left that content version unchanged.
 
-Validation: three HTML pages and 46 local links/anchors checked; all six proposal
-entries present. The WIP desktop table and overview content were reviewed in a
-browser preview. Integrated changes, the overview demo, downloadable C++ sample,
-and expected ANSI output were verified unchanged apart from checkout line endings.
-Coordination Markdown links and code fences were checked. No library tests,
-example compilation, CI checks, or actual tablet-layout checks were performed
-for this documentation-only update.
+Version 7 changes only the TermColorValue WIP section: link pushed test commit
+`4b8ae4eb`, describe the four numeric/rendering boundaries and black presence
+checks, and record the verified MSYS color-test pass. A tablet run of that test
+commit has not been reported. The candidate remains unintegrated and its
+priority is unchanged. No new candidate or design decision was introduced.
+
+Local HTML links and anchors were checked. The overview, Integrated changes,
+other proposal sections, demonstration source, and expected output were
+preserved. This publication did not rerun library tests or perform browser,
+CI, example-compilation, or actual tablet-layout testing. Its PC test result
+comes from the earlier focused test run, recorded in BuildAndTest.md.
+
+Version 6 previously published the revised six-proposal development plan.
 
 Publication provenance:
 
-- Site source commit: `5ad61aa1d15b2aa90834afbd60e1262a51fdfc81`.
-- Saved Site version: 6,
-  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_13eb1171fe848191a574845f7481c4aa`.
-- Successful deployment: `appgdep_6ad5595b43648191994186078a75b560`.
+- Site source commit: `2d883fecb8f9d24880b5896eed792b95f8eb4266`.
+- Saved Site version: 7,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_4979f7755e788191b47c345593e4d32d`.
+- Successful deployment: `appgdep_6ad56133fd68819180481f277360f164`.
 
 The future APIs remain proposals. Approval to describe these six proposals does
 not authorize their implementation, integration, or library pushes.
@@ -120,7 +128,7 @@ proposals from the planning discussion:
 | 1 | `feat/Fluent` | Planned non-breaking setters/getters. Local empty baseline branch exists; no implementation claim or remote branch link. |
 | 2 | `feat/Palette` | Planned non-breaking cube/grayscale palette support. Preserve current operators and review discriminator `10` assumptions. |
 | Later; order open | `feat/ConstColor` | GitHub tip `875850e5a31c5811041fdd14c28675361f919d54`, based on `1c61e624`; breaking candidate. |
-| Later; order open | `refactor/TermColorValue` | GitHub tip `0d104dfd55cd71d42d9048c43890207aa769cf53`, based on `1c61e624`; breaking numeric contract. |
+| Later; order open | `refactor/TermColorValue` | GitHub tip `4b8ae4ebf2fa4640341845ec5b2983f9e69be9fb`, based on `1c61e624`; breaking numeric contract with added boundary tests and a verified MSYS color-test pass. |
 | Later; order open | `feat/Blend` | Planned explicit blending plus breaking strict composition for both `|` and `|=`. |
 | After required foundations | `feat/StyledText` | Planned nested text, `absolute`, and lazy blending. Exact dependencies remain open. |
 
@@ -132,10 +140,11 @@ Create planned branches only when work begins from the then-accepted baseline.
 Link existing remote candidates; planned names need only page anchors until
 their branches exist.
 
-Terry reported PC and tablet passes for both implemented candidates; exact
-tested SHAs and fresh logs were not supplied. The observed source tips are
-separate from that report. Source was inspected during this update, but no new
-assistant library tests or CI verification were performed. See BuildAndTest.md.
+Terry's earlier PC/tablet pass reports for both implemented candidates did not
+identify exact tested SHAs or provide fresh logs. Separately, TermColorValue's
+new boundary checks passed in the assistant's MSYS color-test run and were
+committed as `4b8ae4eb`. A tablet run of that new test commit and CI results
+have not been reported. See BuildAndTest.md for the evidence and limits.
 Documentation, migration notes, changelog, compatibility, and final acceptance
 review remain pending.
 
