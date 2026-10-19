@@ -13,6 +13,10 @@ MSYS2. UCRT64 builds have passed on the PC, but UCRT64 is not the project's
 required general-purpose environment. Terry prefers POSIX tooling and uses
 native Windows tooling when needed. Linux testing is also useful.
 
+Use MSYS2 Git for both project repositories on this PC. Explicitly select
+its executable when working from PowerShell; see
+[Workflow.md](Workflow.md#git-environment-on-the-windows-pc).
+
 New library work targets C++23. Preserve upstream compatibility machinery and
 test relevant older-language configurations when a change is intended to retain
 that compatibility. C++26 is an eventual target, not a current prerequisite.

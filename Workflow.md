@@ -16,6 +16,17 @@ the deliverable and from the Sites implementation.
 
 The Sites project is maintained separately. See [Website.md](Website.md).
 
+## Git environment on the Windows PC
+
+Use MSYS2 Git for both the `fmt` and `FmtColorGpt` repositories, including
+status, diffs, commits, fetches, and pushes. In an MSYS shell, use `/usr/bin/git`.
+When invoking Git from PowerShell, explicitly select
+`C:\msys64\usr\bin\git.exe` or run it through the MSYS shell. Check executable
+provenance before Git operations; a bare `git` in PowerShell may resolve to
+Codex's bundled Windows Git. Do not use that bundled Git for these repositories.
+Use the existing MSYS2 Git identity and SSH configuration for commits and
+network operations rather than replacing them with Windows-specific settings.
+
 ## Agree, implement, verify
 
 Discuss and agree on one change, implement it on a focused branch, test it,
