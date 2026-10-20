@@ -57,8 +57,8 @@ and its limits, and Website.md for the confirmed website publication.
 The Termux workaround was then accepted and pushed as one further squash commit,
 [`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98).
 Terry reported successful PC and Termux runs of the rebased branch. The website
-documents both accepted changes. ConstColor and TermColorValue remain
-unintegrated candidates with Terry-reported PC and tablet passes.
+documents both accepted changes. The later color integrations and current
+remaining candidate are recorded below.
 
 On October 19, 2026, `doc/BaseColor` was integrated and pushed as one squash
 commit, [`f913e54c`](https://github.com/tjgolubi/fmt/commit/f913e54cf41c8aafae8ce951817008e7969d4c59),
@@ -71,46 +71,48 @@ from its homepage and every page's navigation. See [Website.md](Website.md)
 for publication provenance and [BuildAndTest.md](BuildAndTest.md) for validation.
 No release tag or version bump was created for this integration.
 
-## CleanUp integration and candidate status, October 20, 2026
+## Current color integration status, October 20, 2026
 
-`refactor/CleanUp` was accepted and pushed as one squash commit on `FmtColor`,
-[`8026a7d3`](https://github.com/tjgolubi/fmt/commit/8026a7d33bf2a9ec902c8b2e842bcedd30336bf1).
-GitHub confirmed this tip. It encapsulates packed colors, adds explicit RGB
-conversions and component-wise RGB OR, simplifies ANSI escape generation,
-permits getters for empty style components, and builds with eight parallel
-jobs. It retains padded RGB output, the existing color encodings, and existing
-style-composition rules. Its guide, tests, and git-cliff-generated breaking
-entry are included in the same squash commit.
+The accepted history on `FmtColor` is now:
 
-Terry explicitly accepted two source compatibility changes: packed integers
-must be directly constructed as `rgb{value}`, and `emphasis | emphasis` returns
-`emphasis` rather than `text_style`. Declare `text_style` explicitly when its
-members are needed. Acceptance of these changes does not automatically accept
-other breaking candidates or change the remaining proposal priorities.
-
-During squash preparation, the assistant verified the MSYS PC shared build,
-all 22 CTest executables, documentation generation, and strict C++11/14/23
-header checks. Terry reported CleanUp working on his tablet. See
-[BuildAndTest.md](BuildAndTest.md) for configurations and evidence limits.
-No release tag or version bump was created by this integration.
-
-Terry rebased both candidates onto accepted `FmtColor`, reported all tests
-passing, and pushed with `--force-with-lease`. GitHub confirmed:
-
-| Candidate | Current GitHub tip | Remaining change beyond CleanUp |
+| Change | Accepted commit | Status |
 | --- | --- | --- |
-| `feat/ConstColor` | [`ed21ec1f`](https://github.com/tjgolubi/fmt/commit/ed21ec1fb95142263587d28d68d049187ed44366) | Replace the named-color enum with namespace RGB constants; packed conversions are already explicit in CleanUp. |
-| `refactor/TermColorValue` | [`db224fb2`](https://github.com/tjgolubi/fmt/commit/db224fb291b46a9e7a511a36ee3cb981e9413e9d) | Change terminal-color values to 0–15 while preserving symbolic rendering. |
+| Amended CleanUp | [`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22) | Packed colors, explicit RGB conversion and OR, emphasis-valued OR, empty getters, `no_color_t`/`no_color`, underlying support, and eight-job builds. Replaces the initially published `8026a7d3`. |
+| TermColorValue | [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936) | One squash above amended CleanUp; terminal indices 0–15 with unchanged emitted SGR, boundary tests, migration guide, and generated fork changelog. |
+| Clang compatibility fix | [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a) | Direct commit by Terry to `FmtColor`; workaround for Clang 3.6 and earlier only. No changelog edit, at Terry's explicit direction. |
 
-These are reported candidate test results, separate from the assistant's PC
-checks. Both candidates remain unintegrated, with changelog preparation,
-compatibility acceptance, and final integration review pending.
+Terry performed the final commits and pushes. During TermColorValue integration,
+the assistant prepared the squash and stopped before committing for Terry's
+review. No release tag or version bump was created. The source working tree was
+clean after the Clang fix was pushed.
 
-Public Site **version 14** publishes CleanUp's accepted explanation, a homepage
-summary, and the revised candidate links and validation status. Public access
-was preserved; native deployment succeeded and the live CleanUp explanation
-was checked. Publication preceded this coordination update. See
-[Website.md](Website.md) for provenance.
+CleanUp's public additions include `fmt::underlying_type` and
+`fmt::to_underlying()`. The internal `detail::color_type` uses minimal
+variant-style classification and getters while retaining C++11 support.
+See [CppDesign.md](CppDesign.md#accepted-cleanup-baseline-october-20-2026).
+
+The local MSYS TermColorValue build, all 22 CTest executables, documentation,
+and strict C++11/14/17/23 checks passed. The Clang fix's guarded path passed
+Clang 3.6.2/C++11 on Compiler Explorer; its default path passed local GCC
+checks and color tests. These are separate from GitHub Actions results.
+
+GitHub CI runs automatically in Terry's fork on pushes. The first accepted
+TermColorValue run found the deleted-template specialization problem on
+Clang 3.6. The subsequent Linux run for `723a9c18` failed on GCC 11/C++11
+conversion warnings treated as errors; other Linux jobs, including Clang 3.6,
+were cancelled. That remaining issue has not been fixed. See
+[BuildAndTest.md](BuildAndTest.md#github-actions-and-the-clang-fix-october-20-2026)
+for exact runs and the latest recorded snapshot.
+
+ConstColor remains an unintegrated candidate at verified tip `ed21ec1f`,
+based on historical CleanUp `8026a7d3`. A rebase onto current `FmtColor`
+has not been reported. TermColorValue is no longer pending.
+
+Public Site **version 15** documents accepted TermColorValue, amended CleanUp,
+and the remaining proposals. Publication succeeded before this coordination
+update. Its historical CI note predates the pushed Clang fix; this coordination
+update does not publish a new Site version. See
+[Website.md](Website.md#current-publication) for provenance.
 
 ## Historical candidate documentation update, October 19, 2026
 
@@ -126,8 +128,9 @@ Terry rebased both implemented candidates above accepted documentation baseline
 GitHub confirmed both tips during the website update. Terry reported successful
 compilation, tests, and documentation generation after his final revisions.
 The assistant's narrower checks and the limits of the reported results are
-recorded in [BuildAndTest.md](BuildAndTest.md). Both candidates remain
-unintegrated; no new release tag or version bump was created.
+recorded in [BuildAndTest.md](BuildAndTest.md). At that time both candidates remained
+unintegrated; later acceptance is recorded above. No release tag or version
+bump was created.
 
 Public Site version 13 publishes the updated candidate explanations, commit
 links, branch-documentation links, and validation records. It preserves the
@@ -136,12 +139,12 @@ for publication provenance and the Windows/MSYS publishing lessons.
 
 ## Current development plan
 
-After accepted CleanUp baseline `8026a7d3`, prioritize the remaining
+From current accepted `FmtColor` tip `723a9c18`, prioritize the remaining
 non-breaking work for the {fmt}-compatible release: `feat/Fluent`,
 then `feat/VarColor`, then `feat/Palette`. Fluent covers emphasis only; VarColor
 covers color values, constructors, and fluent color operations. Palette extends
 VarColor with cube/grayscale alternatives. Later breaking candidates are
-`feat/ConstColor`, `refactor/TermColorValue`, and `feat/Blend`; their relative
+`feat/ConstColor` and `feat/Blend`; their relative
 order is open. `feat/ConvertColors` names the existing explicit RGB-promotion
 work using the specified Xterm palette; its integration position remains open.
 Blend combines explicit blending with strict composition for `|` and `|=`.

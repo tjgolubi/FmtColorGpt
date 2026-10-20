@@ -64,7 +64,8 @@ independent library follows standard C++ library naming and API style.
 ## Accepted CleanUp baseline, October 20, 2026
 
 `FmtColor` now includes accepted squash
-[`8026a7d3`](https://github.com/tjgolubi/fmt/commit/8026a7d33bf2a9ec902c8b2e842bcedd30336bf1).
+[`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22).
+This is the amended replacement for initially published `8026a7d3`.
 This section records implemented behavior and supersedes older allocation of
 these changes to later proposals:
 
@@ -91,6 +92,40 @@ and the emphasis-OR return type. This does not establish a new ABI or binary
 serialization contract or accept the other breaking proposals. The remaining
 Fluent, VarColor, Palette priority is unchanged.
 
+### Amended value APIs and accepted terminal indices
+
+CleanUp now supplies public `fmt::no_color_t` and `fmt::no_color` without
+`std::nullopt`, in C++11 and later. Passing the sentinel to free `fg()` or
+`bg()` constructs an unspecified channel; it does not store a terminal reset.
+The internal `detail::color_type` behaves as the needed subset of
+`variant<no_color_t, terminal_color, rgb>`, using `holds_alternative<T>()`
+and checked nonmember `get<T>()`. The former kind predicates and named
+`rgb()`/`terminal_color()` accessors were removed. Its implicit color
+constructors remain. It is an implementation detail, not a public variant API;
+extend it only when a concrete need arises.
+
+Public `fmt::underlying_type<T>::type` and `fmt::to_underlying(value)`
+support `terminal_color` and `emphasis` as `uint8_t`, `rgb` and internal
+`color_type` as `uint32_t`, and `text_style` as `uint64_t`.
+Conversions are `constexpr` and `noexcept`. Appropriate integer casts in
+`color.h` use the helper. Class `value_type` aliases and named bit counts
+replace ad hoc integer names and magic numbers; Terry decided they do not
+need separate user-guide coverage because consumers can use `auto`.
+Underlying integers do not establish stable serialization or cross-version ABI.
+
+TermColorValue was accepted as [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936) above amended CleanUp.
+`terminal_color` values are now palette indices 0–15. Rendering maps normal
+0–7 to foreground/background SGR 30–37/40–47 and bright 8–15 to
+90–97/100–107. Black's zero index remains specified via its discriminator.
+Symbolic source and emitted appearance are retained; numeric conversions and
+persisted values require migration. Rebuild code exchanging terminal-colored
+styles across binary boundaries even though the style layout is unchanged.
+
+The subsequent [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a) retains the deleted primary `get<T>`
+template by default. Only `FMT_CLANG_VERSION != 0 && FMT_CLANG_VERSION <= 306`
+uses a dependent assertion to reject unsupported types, avoiding the old
+Clang specialization bug. Do not apply the workaround to other compilers.
+
 ### Experimental work beyond CleanUp
 
 `refactor/Crazy` was rebased on CleanUp. Its recorded local documentation tip
@@ -101,7 +136,7 @@ gates followed by explicit checks of both original color operands, including
 `text_style::set_emphasis()` replacement. It retains disabled fluent color
 setters that need further review. Performance of the table has not been
 benchmarked. This branch has not been approved for website inclusion; public
-Site version 14 does not add it to the candidate list.
+Site version 15 does not add it to the candidate list.
 
 ## Proposed branches and integration priorities
 
@@ -113,11 +148,10 @@ until an explicitly reviewed breaking feature changes it.
 | Priority | Proposed branch | Scope and compatibility |
 | --- | --- | --- |
 | 1 | `feat/Fluent` | Add emphasis-only fluent setters and boolean getters for all eight existing attributes. Preserve unrelated bits, colors, existing APIs, rendering, layout, and supported language modes. |
-| 2 | `feat/VarColor` | Add `no_color_t`/`no_color`, C++17+ `var_color`, color constructors, fluent foreground/background setters and getters, presence aliases, and clearing. Build on accepted Fluent. |
+| 2 | `feat/VarColor` | Build on accepted `no_color_t`/`no_color`; add C++17+ `var_color`, color constructors, fluent foreground/background setters and getters, presence aliases, and clearing. Build on accepted Fluent. |
 | 3 | `feat/Palette` | Extend VarColor with `cube_color` and `gray_color`, including free and fluent foreground/background support. Use discriminator `10` while preserving existing encodings and composition behavior. Intended as a non-breaking addition. |
 | Order open | `feat/ConvertColors` | Give the existing explicit color-to-RGB conversion design and specified Xterm `terminal_palette` a dedicated branch. Exact APIs and dependencies remain open; no new conversion scope. |
 | Later; relative order open | `feat/ConstColor` | Replace the named-color enum with RGB constants. Explicit packed conversions are inherited from CleanUp. Breaking candidate; rebased, implemented, and unintegrated. |
-| Later; relative order open | `refactor/TermColorValue` | Change terminal-color values from SGR numbers to 0–15 while preserving symbolic styling and emitted SGR. Breaking numeric-value contract; implemented on its branch. |
 | Later; relative order open | `feat/Blend` | Introduce RGB and style blending together with breaking strict-composition semantics for both `operator|` and `operator|=`. Include migration guidance. |
 | After required foundations | `feat/StyledText` | Structured nested text, `absolute`, and lazy blending during rendering. Exact dependencies and compatibility effects remain to be reviewed. |
 
@@ -141,12 +175,10 @@ as public Site version 10, not accepted for integration. Create branches
 when implementation begins from the accepted baseline at that time; do not
 create speculative branches merely to populate the plan. A local Fluent branch
 was created early at the unchanged baseline; that does not mean implementation
-has begun. ConstColor and TermColorValue have Terry-reported PC and tablet
-passes, recorded in [BuildAndTest.md](BuildAndTest.md), and still need acceptance
-review. On October 20, Terry reported both candidates rebased on CleanUp,
-passing all tests, and pushed with `--force-with-lease`; current verified tips
-are `ed21ec1f` and `db224fb2`. Their successful tests do not move them ahead of
-remaining non-breaking work.
+has begun. TermColorValue is now integrated. ConstColor remains at verified
+`ed21ec1f`, based on the earlier CleanUp `8026a7d3`; no rebase onto the amended
+CleanUp, accepted TermColorValue, and Clang-fix baseline has been reported.
+Its historical test reports do not move it ahead of remaining non-breaking work.
 
 ## Colors
 
@@ -178,7 +210,7 @@ discriminator combinations while preserving existing user-visible behavior.
 Range validation, exact constructors, and RGB promotion APIs remain open.
 Keeping object layout unchanged alone does not prove mixed-version ABI safety.
 
-The separate breaking `refactor/TermColorValue` candidate changes numeric values
+The accepted breaking `refactor/TermColorValue` integration changes numeric values
 from 30–37 and 90–97 to 0–15 and maps them back to SGR during rendering. Code
 using numeric conversions or persisted values needs migration; symbolic styling
 remains unchanged. This representation change is negotiable for
@@ -269,9 +301,9 @@ upstream constexpr macros. Fluent adds no foreground/background operations.
 
 ### Variant color API
 
-VarColor introduces public `fmt::no_color_t` and `fmt::no_color` across supported
-language modes, using upstream compatibility provisions for the constant.
-For C++17 and later, provide:
+VarColor builds on public `fmt::no_color_t` and `fmt::no_color`, already supplied
+by amended CleanUp across supported language modes. For C++17 and later,
+provide the proposed public variant API:
 
 ```cpp
 using var_color = std::variant<no_color_t, terminal_color, rgb>;

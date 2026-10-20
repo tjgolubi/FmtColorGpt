@@ -26,6 +26,44 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
 
+The public Site was successfully published on October 20, 2026, as **version 15**.
+The native deployment returned success and the live TermColorValue section
+was verified in the browser. Existing public access was preserved.
+
+- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html#termcolorvalue)
+  now explains accepted TermColorValue `81f79d53`: indices, output mapping,
+  specified black, numeric/binary/persistence migration, exact accepted files,
+  regression tests, local checks, user-reported platform results, and the first
+  Clang 3.6 CI failure. Amended CleanUp links now target `9f399a23` and cover
+  sentinels and underlying support.
+- The homepage identifies TermColorValue as integrated. Work in progress
+  removes it from the candidate table and retains its old anchor as a pointer
+  to the accepted explanation. ConstColor remains pending on its historical
+  `8026a7d3` baseline; a rebase onto the current accepted history is not claimed.
+- Fluent, VarColor, and Palette retain their planned order. VarColor now builds
+  on the accepted sentinel rather than proposing it as new. Crazy remains
+  excluded. The design, demonstration, styling, and assets were preserved.
+
+Validation checked three pages, 58 local links/anchors, unique IDs, HTTP
+responses, and whitespace. A local browser preview inspected the updated
+section and remaining proposal table; the published accepted commit was then
+verified in the browser. No new library runtime tests were part of publication.
+
+Publication provenance:
+
+- Site source commit: `b444aea162875166b432515ab269f24d606ece6e`.
+- Saved Site version: 15,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_09641c029a648191b28ae9926a4371c7`.
+- Successful deployment: `appgdep_6ad7f38b072c8191a3379810bc46eb19`.
+
+Publication preceded this coordination update. Version 15's CI failure note
+describes `81f79d53`; the later pushed Clang fix `723a9c18` and subsequent
+GCC conversion-warning failure are recorded in BuildAndTest.md. They have
+not yet been published on the Site. This coordination-only request does not
+authorize an additional website change.
+
+### Historical version 14
+
 The public Site was successfully published on October 20, 2026, as **version 14**,
 before this coordination update. Native deployment confirmed success and the
 live CleanUp explanation was checked in the browser. Existing public access
@@ -47,7 +85,7 @@ was verified and preserved (policy revision 2).
   already-explicit private packed constructor. The remaining Fluent, VarColor,
   Palette priorities, demonstration, design, and assets are preserved.
 
-Both candidates remain unintegrated. Crazy is still an experiment and was not
+At version 14, both candidates remained unintegrated. Crazy was an experiment and was not
 added to the approved public candidate list. No new library tests, CI checks,
 or tablet-layout checks were run as part of this website update.
 
@@ -293,16 +331,15 @@ now integrated. On October 18 he approved updating the website with all six
 proposals from the planning discussion. The table below now reflects the revised
 coordination plan, including ConvertColors, published as Site version 10 on
 October 18, with accepted CleanUp and candidate status refreshed in
-version 14 on October 20:
+version 15 on October 20. TermColorValue is now integrated:
 
 | Priority | Proposal | Source / status |
 | --- | --- | --- |
 | 1 | `feat/Fluent` | Planned emphasis-only setters/getters. Local empty baseline branch exists; no implementation claim or remote branch link. |
-| 2 | `feat/VarColor` | Planned color variant, sentinel, constructor, fluent color operations, presence aliases, and clearing. C++17+ variant APIs; existing older-mode APIs preserved. |
+| 2 | `feat/VarColor` | Planned color variant, constructor, fluent color operations, presence aliases, and clearing; builds on the accepted sentinel. C++17+ variant APIs; existing older-mode APIs preserved. |
 | 3 | `feat/Palette` | Planned cube/grayscale extension of VarColor. Preserve current operators and review discriminator `10` assumptions. |
 | Order open | `feat/ConvertColors` | Planned branch for the existing explicit RGB-promotion design and specified Xterm terminal palette. Exact APIs and dependencies remain open; scope unchanged. |
-| Later; order open | `feat/ConstColor` | Verified GitHub tip `ed21ec1fb95142263587d28d68d049187ed44366`, above accepted `8026a7d3`; namespace-constant breaking candidate with committed migration documentation and October 20 reported test pass. |
-| Later; order open | `refactor/TermColorValue` | Verified GitHub tip `db224fb291b46a9e7a511a36ee3cb981e9413e9d`, above accepted `8026a7d3`; breaking numeric contract with retained boundary tests, committed migration guidance, and October 20 reported test pass. |
+| Later; order open | `feat/ConstColor` | Verified GitHub tip `ed21ec1fb95142263587d28d68d049187ed44366`, above historical `8026a7d3`; not yet rebased onto current `723a9c18`; namespace-constant breaking candidate with committed migration documentation and October 20 reported test pass. |
 | Later; order open | `feat/Blend` | Planned explicit blending plus breaking strict composition for both `|` and `|=`. |
 | After required foundations | `feat/StyledText` | Planned nested text, `absolute`, and lazy blending. Exact dependencies remain open. |
 
@@ -311,12 +348,13 @@ of VarColor. This keeps VarColor usable independently of palette support.
 ConvertColors names existing design work; its integration position remains open.
 None
 requires ConstColor or terminal-color renumbering. The
-three breaking branches have no agreed relative order. Do not infer acceptance
+remaining ConstColor and Blend breaking branches have no agreed relative order. Do not infer acceptance
 from the table's row order or claim StyledText requires every preceding branch.
 Create planned branches only when work begins from the then-accepted baseline.
 Link existing remote candidates; planned names need only page anchors until
 their branches exist.
 
+Historical candidate evidence below predates TermColorValue acceptance.
 Terry's earlier PC/tablet pass reports for both implemented candidates did not
 identify exact tested SHAs or provide fresh logs. Separately, TermColorValue's
 new boundary checks passed in the assistant's MSYS color-test run and were
@@ -329,8 +367,8 @@ the newer evidence separately from the October 18 results. Changelog preparation
 compatibility acceptance, and final integration review remain pending.
 
 On October 20, both candidates were again rebased, all tests passed according
-to Terry, and rewritten tips were pushed with `--force-with-lease`. Current
-verified tips are listed above. These do not establish a new assistant runtime
+to Terry, and rewritten tips were pushed with `--force-with-lease`. At that time, the
+verified tips were those recorded in BuildAndTest.md. These do not establish a new assistant runtime
 or CI run; exact tested SHAs and configurations remain unreported. CleanUp is
 accepted and described in Integrated changes, not a remaining candidate.
 

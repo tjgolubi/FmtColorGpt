@@ -9,9 +9,10 @@ project discussion means repository-relative, not a filesystem-root path.
 ## Platforms and configuration
 
 The primary user test platforms are Android/Termux and the Windows PC using
-MSYS2. UCRT64 builds have passed on the PC, but UCRT64 is not the project's
-required general-purpose environment. Terry prefers POSIX tooling and uses
-native Windows tooling when needed. Linux testing is also useful.
+MSYS2. Terry removed UCRT64 from the PC on October 20; do not use or reinstall
+it for this project. Historical UCRT64 results below describe earlier setups.
+Terry prefers POSIX tooling and uses native Windows tools where needed, such
+as the separate Sites helper. Linux testing is also useful.
 
 Use MSYS2 Git for both project repositories on this PC. Explicitly select
 its executable when working from PowerShell; see
@@ -96,7 +97,7 @@ manual activation in the calling shell. Do not run the release script merely
 to build local documentation; it also performs release operations.
 
 For FmtColor on the PC, use the MSYS shell with Python, CMake, GCC, and Doxygen
-from `/usr/bin`. UCRT64 is reserved for work that needs that environment.
+from `/usr/bin`. UCRT64 has been removed at Terry's request.
 Install a suitable Doxygen and Python through the platform's package manager.
 Do not reuse an environment created with UCRT64 Python in an MSYS build.
 
@@ -127,7 +128,7 @@ It selects `FMTCOLOR_SKIP=ON` when it detects Termux and OFF elsewhere. The
 option's implementation was accepted in `1c61e624`; it is now present alongside
 the script on `FmtColor`. Selecting ON on older branches without that
 implementation cannot enable skips.
-Since accepted CleanUp commit `8026a7d3`, the library build invocation uses
+Since CleanUp (now amended accepted commit `9f399a23`), the library build invocation uses
 `--parallel 8`; test execution remains serial. No measured speedup is claimed.
 The script stops on a failing test run, before the documentation-build step.
 The commands above remain useful for building documentation separately.
@@ -265,7 +266,7 @@ succeeded. The published overview, emphasis table, and named-color swatches
 were checked in the browser. See [Website.md](Website.md) for the public links
 and the separate Sites publication record.
 
-## Candidate validation reported October 18, 2026
+## Historical candidate validation reported October 18, 2026
 
 Terry reported that both `feat/ConstColor` and `refactor/TermColorValue` pass
 on his PC and tablet. Current GitHub branch tips observed during this update:
@@ -338,7 +339,7 @@ build, runtime-suite rerun, tablet result, or CI result.
 Public Site version 9 published this result before this coordination update.
 Earlier reported PC/tablet passes remain separate from this focused check.
 
-## Rebased candidate documentation, October 19, 2026
+## Historical rebased candidate documentation, October 19, 2026
 
 Both candidates now include accepted baseline `f913e54c`. The documentation
 commits below were reviewed in this chat, committed and pushed by Terry, and
@@ -396,7 +397,7 @@ branches. Changelog preparation, compatibility acceptance, and final integration
 review remain pending. Neither branch was integrated into `FmtColor` during
 this chat. Public Site version 13 publishes this status; see Website.md.
 
-## Accepted CleanUp validation, October 20, 2026
+## Historical initial CleanUp validation, October 20, 2026
 
 CleanUp was accepted and pushed as
 [`8026a7d3`](https://github.com/tjgolubi/fmt/commit/8026a7d33bf2a9ec902c8b2e842bcedd30336bf1),
@@ -451,7 +452,7 @@ created. The staged feature tree matched CleanUp apart from the generated
 changelog, and whitespace checks passed. The assistant stopped before commit;
 Terry's later accepted GitHub tip was verified through the GitHub connector.
 
-## Candidate rebases reported October 20, 2026
+## Historical candidate rebases reported October 20, 2026
 
 Terry reported successfully rebasing both candidates onto `FmtColor`, passing
 all tests, and force-pushing with `--force-with-lease`. GitHub confirmed:
@@ -481,6 +482,122 @@ guide examples compiled and ran in C++11 and C++23, including emphasis replaceme
 and unpadded output; its documentation built successfully. These are scoped
 historical checks, not fresh results for every rebased Crazy tip, an accepted
 integration, or a measured speed comparison. CleanUp's padded output is separate.
+
+## Accepted amendments and TermColorValue, October 20, 2026
+
+The current accepted sequence is amended CleanUp [`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22),
+TermColorValue [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936), then the Clang fix [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a).
+Earlier references to `8026a7d3`, `db224fb2`, and both candidates being
+unintegrated are historical. ConstColor remains pending at `ed21ec1f`,
+based on the older CleanUp; no rebase onto this current sequence is reported.
+
+The amended CleanUp adds tested underlying conversions for terminal colors,
+emphasis, RGB, internal color values, and text styles. Terry reported those
+tests passing, then committed and force-pushed the amendments. Class
+`value_type` aliases replace prior integer names, and named widths replace
+magic numbers. The public helper usage is documented; the aliases do not
+require separate user-guide coverage.
+
+Before TermColorValue acceptance, Codex ran `./build.bash` on candidate
+`c09fa3d4467734adc98b67f7e62d830c696c22dc` with MSYS GCC 15.3.0,
+Release/C++23, `FMT_TEST=ON`, `FMT_DOC=ON`, and `FMTCOLOR_SKIP=OFF`.
+Build, all **22 CTest executables**, and documentation generation passed.
+Strict color-test syntax checks passed in C++11/14/17/23. All 22 CTest
+executables also passed during squash preparation. Accepted `81f79d53`
+differs from the tested candidate only in `FmtColorChangeLog.md`.
+
+The documentation review compiled all 19 color-guide examples in C++11 and
+C++23, checked all 16 terminal indices and 32 foreground/background mappings
+against the implementation, checked links and anchors, and built the fork
+documentation. Boundary tests cover indices 0, 7, 8, and 15; foreground SGR
+30, 37, 90, and 97; background SGR 40, 47, 100, and 107; and specified black.
+Terry separately reported the rebased candidate passing on PC and tablet;
+exact tested SHAs, configurations, counts, and individual skips were not supplied.
+
+git-cliff regenerated the fork changelog after the amendments and for the
+TermColorValue squash. The reinstalled PC tool is the MSYS/Cygwin executable
+documented in [Workflow.md](Workflow.md#msys-path-git-cliff-and-ssh).
+
+## GitHub Actions and the Clang fix, October 20, 2026
+
+Pushes automatically run the inherited workflows in **`tjgolubi/fmt`**.
+These use GitHub-hosted runners independently of `fmtlib/fmt`'s runs.
+The inherited upstream documentation-push step requires a deployment secret
+and the `main` branch; it does not execute for `FmtColor`. The separate
+FmtColor documentation workflow publishes Terry's GitHub Pages.
+
+Accepted TermColorValue `81f79d53` passed Windows, macOS, `doc`, and
+FmtColor documentation workflows. Its [Linux run](https://github.com/tjgolubi/fmt/actions/runs/39511575802)
+failed in Clang 3.6/C++11: explicit `inline` specializations of the deleted
+`get<T>` template were treated as deleted/non-inline definitions.
+The matrix cancelled other jobs, so no all-Linux pass is claimed.
+
+The fix retains `= delete` by default. Only
+`FMT_CLANG_VERSION && FMT_CLANG_VERSION <= 306` uses a dependent
+`static_assert(sizeof(T) == 0, "unsupported color alternative")` fallback.
+Supported explicit specializations bypass that fallback; unsupported uses
+fail at compilation without a runtime check. Merely adding `inline` to the
+deleted primary template did not solve the reproducer.
+
+Codex reproduced the original error with Clang **3.6.2** on Compiler Explorer,
+then verified the actual separate `core.h`, `format.h`, and modified
+`color.h` with valid getters in C++11. A negative `get<int>` check failed
+with the intended diagnostic. These are remote compiler checks, not a complete
+CI build. An exploratory Clang 3.6/C++14 check hit an unrelated `core.h`
+`id_adapter` error; that configuration is not the failing C++11 matrix job
+and was not changed. Concatenating headers also produced misleading extra
+errors, so the successful C++11 check used separate header files.
+
+The unguarded fix passed a local full build and all 22 CTest executables.
+After guarding it, strict syntax checks of the full color-test source passed
+in GCC C++11/14/17/23 and the rebuilt color-test executable passed. The full
+suite was not rerun after that guard-only edit. MSYS GoogleTest needs its
+POSIX declarations enabled for strict-mode standalone compilation:
+
+```bash
+g++ -D_GNU_SOURCE -std=c++11 -pedantic-errors -Wall -Wextra -Werror \
+  -Iinclude -Itest -Itest/gtest -fsyntax-only test/color-test.cc
+# Repeat with c++14, c++17, and c++23.
+cmake --build build --target color-test --parallel 8
+ctest --test-dir build -R '^color-test$' --output-on-failure
+```
+
+These local flags did not include `-Wconversion`. They therefore do not
+establish a pass under the stricter CI warning configuration. MSYS GCC reports
+an eight-byte `unsigned long`, so the difference must not be attributed to
+a presumed 32-bit local `long`. Review the complemented `UL` mask under
+the actual CI warning flags.
+
+Terry committed and pushed `723a9c18` directly to `FmtColor` and explicitly
+declined a changelog change. Source working tree was clean afterward; no
+new tablet compiler/version report is available. Current CI results are
+recorded in the snapshot below, not inferred from local passes.
+
+### Remaining Linux conversion-warning failure
+
+The [new Linux run](https://github.com/tjgolubi/fmt/actions/runs/39514388290)
+for `723a9c18` failed in [GCC 11/C++11 Debug](https://github.com/tjgolubi/fmt/actions/runs/39514388290/job/118942930227).
+With `FMT_PEDANTIC=ON` and `FMT_WERROR=ON`, `-Wconversion` diagnostics
+in `color.h` are errors: a complemented `unsigned long` discriminator mask
+narrows to `uint32_t`, and terminal/RGB escape calculations narrow integer
+results to `unsigned char` or `char` (reported lines 339, 711–713, 728,
+738–739). This is a distinct issue from the deleted-template bug. Other Linux
+jobs, including both Clang 3.6 jobs, were cancelled; neither a Clang CI pass nor
+a full Linux pass has been established. No source fix for these conversions
+was authorized or made during the coordination-document update.
+
+CI snapshot verified October 20, 2026, at 23:26 UTC for `723a9c18`:
+
+| Workflow      | Result  | Run |
+| ------------- | ------- | --- |
+| FmtColor docs | success | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39514388264) |
+| doc           | success | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39514388245) |
+| linux         | failure | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39514388290) |
+| windows       | success | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39514388237) |
+| macos         | success | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39514388316) |
+
+No automatic retry, new source change, commit, or push was performed while
+updating these documents.
 
 ## Planned Fluent, VarColor, and Palette checks
 

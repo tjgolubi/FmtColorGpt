@@ -34,6 +34,26 @@ ahead of MSYS2 tools in the helper's process-local PATH. Do not change the
 source repositories' Git configuration to accommodate Sites. See
 [Website.md](Website.md#windows-publishing-environment) for Bash and tar setup.
 
+### MSYS PATH, git-cliff, and SSH
+
+Terry explicitly removed UCRT64 from the PC on October 20. Do not use or
+reinstall it for this project. The MSYS command PATH is:
+
+`/home/tjgolubi/.cargo/bin:/usr/bin:/c/Windows/System32:/c/Windows`
+
+The reinstalled git-cliff 2.14.2 is the MSYS/Cygwin build at
+`/home/tjgolubi/.cargo/bin/git-cliff.exe`, built with
+`--no-default-features --target x86_64-pc-cygwin`. It depends on
+`msys-2.0.dll`, not UCRT64; optional remote integrations were omitted.
+Use it with the existing `cliff.toml`; no UCRT64 PATH is needed.
+
+Command-line Git now uses the existing SSH agent successfully. In each
+nonlogin MSYS command needing SSH, source `~/.ssh/agent.env` to import
+`SSH_AUTH_SOCK` and the recorded agent state. Do not start replacement agents,
+change keys, or replace Git identity to work around a missing environment.
+The GitHub connector remains useful for remote inspection; local Git state,
+squashes, and diffs use MSYS Git.
+
 ## Agree, implement, verify
 
 Discuss and agree on one change, implement it on a focused branch, test it,
@@ -147,6 +167,19 @@ commit before pushing the accepted integration branch.
 Do not assume branch status from these documents. Verify current Git history
 before merging, rebasing, deleting branches, or recovering a merge.
 
+### Terry's final commit and push
+
+Terry clarified the integration stopping point on October 20: the assistant
+normally prepares `git merge --squash`, leaves the result uncommitted for
+his review, and provides a final commit message. Terry decides whether to
+commit and push. Do not infer permission to commit or push from permission
+to prepare the squash. Explicit later instructions can authorize a different
+workflow. TermColorValue followed this process.
+
+Terry separately chose to commit the small Clang compatibility fix directly
+to `FmtColor` as `723a9c18`, without a feature-branch squash or changelog
+edit. This is a recorded exception, not a replacement for the normal workflow.
+
 ## Change log
 
 Maintain `FmtColorChangeLog.md` separately from upstream `ChangeLog.md`.
@@ -201,6 +234,10 @@ in that same squash commit, rather than adding a separate bookkeeping commit
 afterward. Do not invent a commit hash for a prospective entry. Review generated
 output before replacing `FmtColorChangeLog.md`; avoid duplicate entries when
 regenerating it.
+
+Terry explicitly declined a changelog edit for the Clang 3.6 compatibility
+fix `723a9c18`. Preserve that decision; do not add a compensating entry or
+regenerate the changelog solely for this fix without a new instruction.
 
 ### Fork versions and releases
 
@@ -281,7 +318,7 @@ validated. Do not rebase unrelated work merely because an upstream update exists
 Commit hashes used by Sites may change during rebases. Refresh links while
 preserving the explanation of the accepted change.
 
-## Accepted CleanUp integration, October 20, 2026
+## Historical initial CleanUp integration, October 20, 2026
 
 Terry accepted the explicit packed RGB construction and emphasis-OR result-type
 changes after discussing their source compatibility effects. He requested
@@ -297,6 +334,24 @@ above `f913e54c`, including source, tests, guide, parallel build invocation,
 and changelog. It did not create a release tag or change the inherited version.
 The remaining candidate priorities stay provisional. See BuildAndTest.md and
 Website.md for validation and confirmed public Site version 14.
+
+## Subsequent amendments and TermColorValue acceptance
+
+Terry amended and force-pushed CleanUp several times. Its accepted replacement
+is [`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22) above `f913e54c`; `8026a7d3` remains a historical
+reference in earlier validation records. The amendments include sentinels,
+minimal internal variant operations, underlying support, value-type naming,
+tests, and user documentation. They were reviewed before the later integration.
+
+Terry rebased TermColorValue and included the regenerated changelog. The
+assistant prepared its squash without committing; Terry reviewed, committed,
+and pushed [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936). It is one commit above `9f399a23`, touching
+the header, color tests, color guide, and fork changelog. No tag or version
+bump was made. Public Site version 15 was then successfully published.
+
+The compiler fix [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a) was committed and pushed by Terry afterward.
+Local compatibility checks do not imply that the full GitHub matrix passed;
+record current CI failures separately in BuildAndTest.md.
 
 ## Coordination document maintenance
 
