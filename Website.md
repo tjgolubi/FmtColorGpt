@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Workflow](Workflow.md) · [Build and test](BuildAndTest.md)
 
-**Working draft, updated October 19, 2026.** This document records intended
+**Working draft, updated October 20, 2026.** This document records intended
 organization, maintenance guidance, and the publication status verified below.
 Later edits must distinguish current observations from future plans.
 
@@ -25,6 +25,47 @@ The website is separate from the library repository and this coordination
 repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
+
+The public Site was successfully published on October 20, 2026, as **version 14**,
+before this coordination update. Native deployment confirmed success and the
+live CleanUp explanation was checked in the browser. Existing public access
+was verified and preserved (policy revision 2).
+
+- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html#cleanup)
+  now explains accepted CleanUp squash `8026a7d3`: packed RGB conversion and OR,
+  empty-component getters, clearer ANSI generation, both accepted source breaks
+  and migration, unchanged padded output and composition, eight-job builds,
+  git-cliff generation, and PC versus reported-tablet validation.
+- [Work in progress](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html#constcolor)
+  links rebased ConstColor `ed21ec1f` and TermColorValue `db224fb2`, both above
+  `8026a7d3`, and refreshes the terminal boundary-test link to `e834fbd8`.
+  Terry's October 20 all-tests-pass and `--force-with-lease` reports are distinct
+  from historical checks. Explicit packed conversions now belong to accepted
+  CleanUp; ConstColor's remaining break replaces the named-color enum.
+- The homepage summarizes today's accepted integration and remaining candidates.
+  VarColor's wording reflects already-relaxed getter preconditions and the
+  already-explicit private packed constructor. The remaining Fluent, VarColor,
+  Palette priorities, demonstration, design, and assets are preserved.
+
+Both candidates remain unintegrated. Crazy is still an experiment and was not
+added to the approved public candidate list. No new library tests, CI checks,
+or tablet-layout checks were run as part of this website update.
+
+Validation checked all local HTML links and anchors, unique IDs, dates, and
+whitespace. A local browser preview and screenshot inspected CleanUp's layout;
+page text confirmed both candidate records and links. The published CleanUp
+section was then verified in the browser. Public source tips were checked with
+the GitHub connector after command-line SSH lacked a usable key; the connector
+was available and worked. No Git/SSH configuration was changed.
+
+Publication provenance:
+
+- Site source commit: `4c1e191948de91bdc7a555e4a1d3bb6932186434`.
+- Saved Site version: 14,
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_e581a90487c0819196f2ab2d7e561f59`.
+- Successful deployment: `appgdep_6ad73867b4bc819195c212f3b88d693d`.
+
+### Version 13
 
 The public Site was successfully published on October 19, 2026, as **version 13**,
 before this coordination update. The deployment tool confirmed success and the
@@ -251,8 +292,8 @@ Terry approved Termux and ConstColor for inclusion on October 17. Termux is
 now integrated. On October 18 he approved updating the website with all six
 proposals from the planning discussion. The table below now reflects the revised
 coordination plan, including ConvertColors, published as Site version 10 on
-October 18, with candidate documentation status refreshed in version 13 on
-October 19:
+October 18, with accepted CleanUp and candidate status refreshed in
+version 14 on October 20:
 
 | Priority | Proposal | Source / status |
 | --- | --- | --- |
@@ -260,8 +301,8 @@ October 19:
 | 2 | `feat/VarColor` | Planned color variant, sentinel, constructor, fluent color operations, presence aliases, and clearing. C++17+ variant APIs; existing older-mode APIs preserved. |
 | 3 | `feat/Palette` | Planned cube/grayscale extension of VarColor. Preserve current operators and review discriminator `10` assumptions. |
 | Order open | `feat/ConvertColors` | Planned branch for the existing explicit RGB-promotion design and specified Xterm terminal palette. Exact APIs and dependencies remain open; scope unchanged. |
-| Later; order open | `feat/ConstColor` | Verified GitHub tip `4cf51e134222dd4b1692fa455fb5ffb5f6f01b5f`, based on `f913e54c`; breaking candidate with committed migration documentation and updated reported validation. |
-| Later; order open | `refactor/TermColorValue` | Verified GitHub tip `7c54b59558da188a390f7f1af68b5ac8e7b87902`, based on `f913e54c`; breaking numeric contract with retained boundary tests, committed migration guidance, and updated reported validation. |
+| Later; order open | `feat/ConstColor` | Verified GitHub tip `ed21ec1fb95142263587d28d68d049187ed44366`, above accepted `8026a7d3`; namespace-constant breaking candidate with committed migration documentation and October 20 reported test pass. |
+| Later; order open | `refactor/TermColorValue` | Verified GitHub tip `db224fb291b46a9e7a511a36ee3cb981e9413e9d`, above accepted `8026a7d3`; breaking numeric contract with retained boundary tests, committed migration guidance, and October 20 reported test pass. |
 | Later; order open | `feat/Blend` | Planned explicit blending plus breaking strict composition for both `|` and `|=`. |
 | After required foundations | `feat/StyledText` | Planned nested text, `absolute`, and lazy blending. Exact dependencies remain open. |
 
@@ -286,6 +327,12 @@ reported successful compilation, tests, and documentation generation after his
 revisions. No new tablet or CI result was established. See BuildAndTest.md for
 the newer evidence separately from the October 18 results. Changelog preparation,
 compatibility acceptance, and final integration review remain pending.
+
+On October 20, both candidates were again rebased, all tests passed according
+to Terry, and rewritten tips were pushed with `--force-with-lease`. Current
+verified tips are listed above. These do not establish a new assistant runtime
+or CI run; exact tested SHAs and configurations remain unreported. CleanUp is
+accepted and described in Integrated changes, not a remaining candidate.
 
 When a branch is accepted, move its explanation to integrated changes, update
 it for the final accepted behavior and validation, and link the resulting

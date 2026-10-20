@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Workflow](Workflow.md) · [Website](Website.md)
 
-**Working draft, updated October 19, 2026.** Commands below run from the root
+**Working draft, updated October 20, 2026.** Commands below run from the root
 of the `tjgolubi/fmt` checkout unless stated otherwise. A leading `/doc/` in
 project discussion means repository-relative, not a filesystem-root path.
 
@@ -127,6 +127,8 @@ It selects `FMTCOLOR_SKIP=ON` when it detects Termux and OFF elsewhere. The
 option's implementation was accepted in `1c61e624`; it is now present alongside
 the script on `FmtColor`. Selecting ON on older branches without that
 implementation cannot enable skips.
+Since accepted CleanUp commit `8026a7d3`, the library build invocation uses
+`--parallel 8`; test execution remains serial. No measured speedup is claimed.
 The script stops on a failing test run, before the documentation-build step.
 The commands above remain useful for building documentation separately.
 
@@ -393,6 +395,92 @@ User-facing documentation and migration guidance are now present on both
 branches. Changelog preparation, compatibility acceptance, and final integration
 review remain pending. Neither branch was integrated into `FmtColor` during
 this chat. Public Site version 13 publishes this status; see Website.md.
+
+## Accepted CleanUp validation, October 20, 2026
+
+CleanUp was accepted and pushed as
+[`8026a7d3`](https://github.com/tjgolubi/fmt/commit/8026a7d33bf2a9ec902c8b2e842bcedd30336bf1),
+one squash commit above `f913e54c`. It includes the guide, color tests,
+`build.bash`'s eight-job build invocation, and the git-cliff-generated entry.
+No tag or version bump was created. Source breaks were explicitly accepted;
+tests alone are not the compatibility acceptance.
+
+### Assistant's staged-squash PC run
+
+Before Terry committed the final integration, the assistant ran `./build.bash`
+on the staged CleanUp squash on `FmtColor`, with MSYS tools, GCC 15.3.0,
+Release/C++23, `FMT_TEST=ON`, `FMT_DOC=ON`, and `FMTCOLOR_SKIP=OFF`.
+The library build, all **22 CTest executables**, and documentation generation
+passed. The pinned Python environment was reused. Known upstream syntax-anchor
+and Material notices remained nonfatal. This records the actual pre-commit
+run; it is not a claim that the final accepted SHA was rerun after Terry's
+additional RGB-test work.
+
+Strict header checks also passed in C++11, C++14, and C++23:
+
+```bash
+g++ -std=c++11 -pedantic-errors -Wall -Wextra -fsyntax-only -x c++ include/fmt/color.h
+g++ -std=c++14 -pedantic-errors -Wall -Wextra -fsyntax-only -x c++ include/fmt/color.h
+g++ -std=c++23 -pedantic-errors -Wall -Wextra -fsyntax-only -x c++ include/fmt/color.h
+```
+
+These use a modern compiler's language modes, not the oldest supported compiler
+releases. The new color-type composition test covers the three supported kinds
+(none, RGB, terminal), both operators, RGB payload OR, reference return, and
+unchanged operands on failure. Reserved discriminator `10` is invalid and was
+removed from the supported-input matrix when the overflow algorithm was chosen.
+The earlier experiment's all-four-discriminator tests do not apply to CleanUp.
+
+The user-guide build passed, and new examples were compiled in C++11 and
+C++23. The generated descriptions and section anchors were checked. Explicit
+packed conversions, emphasis-valued OR, and getters for empty components are
+covered in the committed guide. CleanUp retains padded RGB output and does
+not include Crazy's decimal table, unpadded output, or emphasis setter.
+
+### Reported tablet validation and changelog
+
+Terry reported `refactor/CleanUp` working on his tablet before acceptance.
+Exact commands, final tested SHA, compiler version, test counts, and individual
+skips were not supplied. This remains a user-reported platform result.
+
+The assistant used **git-cliff 2.14.2** with the explicit range
+`b4ffa39b9994c961418406f47358791d89a5aa48..FmtColor` and `--with-commit` for the
+proposed squash message. The entry includes both accepted breaks and their
+migration. It was staged with the change; no separate changelog commit was
+created. The staged feature tree matched CleanUp apart from the generated
+changelog, and whitespace checks passed. The assistant stopped before commit;
+Terry's later accepted GitHub tip was verified through the GitHub connector.
+
+## Candidate rebases reported October 20, 2026
+
+Terry reported successfully rebasing both candidates onto `FmtColor`, passing
+all tests, and force-pushing with `--force-with-lease`. GitHub confirmed:
+
+| Candidate | Current tip | Rebased implementation / test commits |
+| --- | --- | --- |
+| `feat/ConstColor` | [`ed21ec1f`](https://github.com/tjgolubi/fmt/commit/ed21ec1fb95142263587d28d68d049187ed44366) | `aca29f5e` / `efc44c58` |
+| `refactor/TermColorValue` | [`db224fb2`](https://github.com/tjgolubi/fmt/commit/db224fb291b46a9e7a511a36ee3cb981e9413e9d) | `6cfaac04` / `e834fbd8` |
+
+Local ancestry checks confirmed accepted `8026a7d3` is an ancestor of both
+matching branch tips. Exact tested SHAs, commands, platform configurations,
+counts, and individual skips were not supplied; the October 20 report is not a
+new assistant runtime, tablet-specific, or CI result. Earlier PC/tablet reports,
+October 18 header/boundary checks, and October 19 documentation builds remain
+separate historical evidence. Both candidates retain migration documentation
+and remain unintegrated, with compatibility acceptance, changelog preparation,
+and final integration review pending. Public Site version 14 publishes this
+status; see Website.md.
+
+### Experimental Crazy checks
+
+Before CleanUp was selected, temporary compile/link smoke checks of the broader
+experiment passed in C++11/14/23, including its lookup-table definition required
+before C++17. Unpadded-output expectations passed the focused color, wide-
+character, and compile-time-format executables after adjustment. Later Crazy
+guide examples compiled and ran in C++11 and C++23, including emphasis replacement
+and unpadded output; its documentation built successfully. These are scoped
+historical checks, not fresh results for every rebased Crazy tip, an accepted
+integration, or a measured speed comparison. CleanUp's padded output is separate.
 
 ## Planned Fluent, VarColor, and Palette checks
 

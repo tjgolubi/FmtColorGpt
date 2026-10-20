@@ -71,7 +71,48 @@ from its homepage and every page's navigation. See [Website.md](Website.md)
 for publication provenance and [BuildAndTest.md](BuildAndTest.md) for validation.
 No release tag or version bump was created for this integration.
 
-## Candidate documentation update, October 19, 2026
+## CleanUp integration and candidate status, October 20, 2026
+
+`refactor/CleanUp` was accepted and pushed as one squash commit on `FmtColor`,
+[`8026a7d3`](https://github.com/tjgolubi/fmt/commit/8026a7d33bf2a9ec902c8b2e842bcedd30336bf1).
+GitHub confirmed this tip. It encapsulates packed colors, adds explicit RGB
+conversions and component-wise RGB OR, simplifies ANSI escape generation,
+permits getters for empty style components, and builds with eight parallel
+jobs. It retains padded RGB output, the existing color encodings, and existing
+style-composition rules. Its guide, tests, and git-cliff-generated breaking
+entry are included in the same squash commit.
+
+Terry explicitly accepted two source compatibility changes: packed integers
+must be directly constructed as `rgb{value}`, and `emphasis | emphasis` returns
+`emphasis` rather than `text_style`. Declare `text_style` explicitly when its
+members are needed. Acceptance of these changes does not automatically accept
+other breaking candidates or change the remaining proposal priorities.
+
+During squash preparation, the assistant verified the MSYS PC shared build,
+all 22 CTest executables, documentation generation, and strict C++11/14/23
+header checks. Terry reported CleanUp working on his tablet. See
+[BuildAndTest.md](BuildAndTest.md) for configurations and evidence limits.
+No release tag or version bump was created by this integration.
+
+Terry rebased both candidates onto accepted `FmtColor`, reported all tests
+passing, and pushed with `--force-with-lease`. GitHub confirmed:
+
+| Candidate | Current GitHub tip | Remaining change beyond CleanUp |
+| --- | --- | --- |
+| `feat/ConstColor` | [`ed21ec1f`](https://github.com/tjgolubi/fmt/commit/ed21ec1fb95142263587d28d68d049187ed44366) | Replace the named-color enum with namespace RGB constants; packed conversions are already explicit in CleanUp. |
+| `refactor/TermColorValue` | [`db224fb2`](https://github.com/tjgolubi/fmt/commit/db224fb291b46a9e7a511a36ee3cb981e9413e9d) | Change terminal-color values to 0–15 while preserving symbolic rendering. |
+
+These are reported candidate test results, separate from the assistant's PC
+checks. Both candidates remain unintegrated, with changelog preparation,
+compatibility acceptance, and final integration review pending.
+
+Public Site **version 14** publishes CleanUp's accepted explanation, a homepage
+summary, and the revised candidate links and validation status. Public access
+was preserved; native deployment succeeded and the live CleanUp explanation
+was checked. Publication preceded this coordination update. See
+[Website.md](Website.md) for provenance.
+
+## Historical candidate documentation update, October 19, 2026
 
 Terry rebased both implemented candidates above accepted documentation baseline
 `f913e54c`. Documentation is now committed and pushed on each feature branch:
@@ -95,7 +136,8 @@ for publication provenance and the Windows/MSYS publishing lessons.
 
 ## Current development plan
 
-Prioritize non-breaking work for the {fmt}-compatible release: `feat/Fluent`,
+After accepted CleanUp baseline `8026a7d3`, prioritize the remaining
+non-breaking work for the {fmt}-compatible release: `feat/Fluent`,
 then `feat/VarColor`, then `feat/Palette`. Fluent covers emphasis only; VarColor
 covers color values, constructors, and fluent color operations. Palette extends
 VarColor with cube/grayscale alternatives. Later breaking candidates are

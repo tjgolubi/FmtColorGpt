@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-**Working draft, updated October 18, 2026.** Forward intentions, not an
+**Working draft, updated October 20, 2026.** Forward intentions, not an
 implementation authorization or a claim that all features exist.
 
 ## Goals and boundaries
@@ -61,6 +61,48 @@ the later standard-library refactor.
 Modified source follows the style already present in that source. The eventual
 independent library follows standard C++ library naming and API style.
 
+## Accepted CleanUp baseline, October 20, 2026
+
+`FmtColor` now includes accepted squash
+[`8026a7d3`](https://github.com/tjgolubi/fmt/commit/8026a7d33bf2a9ec902c8b2e842bcedd30336bf1).
+This section records implemented behavior and supersedes older allocation of
+these changes to later proposals:
+
+- Packed integer construction of `rgb` is explicit; conversion back to
+  `uint32_t` is explicit and produces `0x00RRGGBB`. Construction ignores the
+  high byte. Named enum colors still convert to RGB.
+- `rgb::operator|=` and nonmember `operator|` OR corresponding component bits;
+  they do not average colors or perform alpha compositing.
+- `emphasis | emphasis` returns `emphasis`. Implicit conversion to `text_style`
+  remains available; explicitly declare `text_style` for style-member use.
+- The style color and emphasis getters accept empty components. Passing an
+  unspecified getter result to `fg()` or `bg()` keeps it unspecified.
+- The private packed `text_style` constructor is explicit. No public fluent
+  color API or `set_emphasis()` was accepted in CleanUp.
+- ANSI generation uses append helpers, an explicit background flag, and an
+  emphasis bit-to-SGR array. RGB parameters retain three-digit padding.
+- Existing packed encodings and RGB-OR/terminal-conflict style composition
+  remain. Addition/overflow validation requires discriminator `10` to remain
+  unused; the reserved color kind is invalid and has no supported composition
+  contract until a feature defines it.
+
+Terry accepted both public source breaks: explicit integer-to-RGB construction
+and the emphasis-OR return type. This does not establish a new ABI or binary
+serialization contract or accept the other breaking proposals. The remaining
+Fluent, VarColor, Palette priority is unchanged.
+
+### Experimental work beyond CleanUp
+
+`refactor/Crazy` was rebased on CleanUp. Its recorded local documentation tip
+is `cd264ef3`, above implementation `3d916680`; these are experimental branch
+commits, not accepted `FmtColor` integrations. It explores high discriminator bit
+gates followed by explicit checks of both original color operands, including
+`rsvd`; a decimal lookup table and unpadded RGB output; and public
+`text_style::set_emphasis()` replacement. It retains disabled fluent color
+setters that need further review. Performance of the table has not been
+benchmarked. This branch has not been approved for website inclusion; public
+Site version 14 does not add it to the candidate list.
+
 ## Proposed branches and integration priorities
 
 Agreed planning decisions, October 18, 2026: prioritize non-breaking additions
@@ -74,7 +116,7 @@ until an explicitly reviewed breaking feature changes it.
 | 2 | `feat/VarColor` | Add `no_color_t`/`no_color`, C++17+ `var_color`, color constructors, fluent foreground/background setters and getters, presence aliases, and clearing. Build on accepted Fluent. |
 | 3 | `feat/Palette` | Extend VarColor with `cube_color` and `gray_color`, including free and fluent foreground/background support. Use discriminator `10` while preserving existing encodings and composition behavior. Intended as a non-breaking addition. |
 | Order open | `feat/ConvertColors` | Give the existing explicit color-to-RGB conversion design and specified Xterm `terminal_palette` a dedicated branch. Exact APIs and dependencies remain open; no new conversion scope. |
-| Later; relative order open | `feat/ConstColor` | Replace the named-color enum with RGB constants and make packed RGB conversions explicit. Breaking candidate; implemented on its branch. |
+| Later; relative order open | `feat/ConstColor` | Replace the named-color enum with RGB constants. Explicit packed conversions are inherited from CleanUp. Breaking candidate; rebased, implemented, and unintegrated. |
 | Later; relative order open | `refactor/TermColorValue` | Change terminal-color values from SGR numbers to 0–15 while preserving symbolic styling and emitted SGR. Breaking numeric-value contract; implemented on its branch. |
 | Later; relative order open | `feat/Blend` | Introduce RGB and style blending together with breaking strict-composition semantics for both `operator|` and `operator|=`. Include migration guidance. |
 | After required foundations | `feat/StyledText` | Structured nested text, `absolute`, and lazy blending during rendering. Exact dependencies and compatibility effects remain to be reviewed. |
@@ -101,7 +143,10 @@ create speculative branches merely to populate the plan. A local Fluent branch
 was created early at the unchanged baseline; that does not mean implementation
 has begun. ConstColor and TermColorValue have Terry-reported PC and tablet
 passes, recorded in [BuildAndTest.md](BuildAndTest.md), and still need acceptance
-review. Their successful tests do not move them ahead of non-breaking work.
+review. On October 20, Terry reported both candidates rebased on CleanUp,
+passing all tests, and pushed with `--force-with-lease`; current verified tips
+are `ed21ec1f` and `db224fb2`. Their successful tests do not move them ahead of
+remaining non-breaking work.
 
 ## Colors
 
@@ -116,9 +161,9 @@ oldest working compiler release. See BuildAndTest.md for the command and limits.
 This preserves common expressions such as `fg(color::red)`, but intentionally
 breaks code that uses `fmt::color` as a type or depends on its enum conversions.
 
-Provide explicit construction and conversion between `rgb` and
-`std::uint32_t`. The packed representation is `0x00RRGGBB`; construction ignores
-the high byte. Retain {fmt}'s existing compatibility provisions in this code.
+Explicit construction and conversion between `rgb` and `std::uint32_t`
+are already accepted in CleanUp; ConstColor inherits them. The packed
+representation is `0x00RRGGBB`; construction ignores the high byte. Retain {fmt}'s existing compatibility provisions in this code.
 
 Keep terminal, indexed/palette, gray, and RGB colors conceptually distinct.
 Zero must not accidentally mean an unspecified color when it denotes a valid
@@ -255,7 +300,8 @@ Provide fluent member `fg()`/`bg()` setters and const value getters, plus
 only their own channel and return `text_style&`; preserve the other channel and
 all emphasis. The variant getters report `no_color_t` for unspecified channels
 without requiring a presence check. Existing `get_foreground()` and
-`get_background()` keep their existing preconditions and return types.
+`get_background()` keep their return types and CleanUp's relaxed behavior
+for unspecified channels; no presence check is required.
 Passing `no_color` clears the selected channel to unspecified; it does not
 store a terminal-reset instruction. The sentinel and clearing syntax should
 also work in older modes without exposing `std::variant` there. Exact overloads,
@@ -263,8 +309,8 @@ including ambiguity avoidance for RGB/terminal arguments, remain subject to
 implementation review. Separate `clear_fg()`/`clear_bg()` convenience methods
 have not been settled.
 
-Make the private packed-value constructor explicit with VarColor and adjust
-affected internal construction. This related cleanup needs no separate branch.
+CleanUp already made the private packed-value constructor explicit and
+adjusted internal construction; that is no longer pending VarColor work.
 Palette subsequently adds its alternatives and support to this color API.
 
 Current {fmt} `operator|` and `operator|=` OR overlapping RGB bits. They reject
