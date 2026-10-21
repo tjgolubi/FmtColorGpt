@@ -126,6 +126,22 @@ template by default. Only `FMT_CLANG_VERSION != 0 && FMT_CLANG_VERSION <= 306`
 uses a dependent assertion to reject unsupported types, avoiding the old
 Clang specialization bug. Do not apply the workaround to other compilers.
 
+### Accepted compiler fixes
+
+Accepted `2ac6e0bd` adds C++11 `constexpr` `narrow_cast` for intentional
+truncation and bounded conversions. Braces express non-narrowing conversions;
+`static_cast` remains for enums. Masks use the intended integer width, and
+terminal SGR calculations use `unsigned`. The helper is unchecked and has no
+runtime range validation. Packed representations and output are retained.
+
+Accepted GitHubCI squash `c89d6dc1` makes `to_underlying(text_style)` a
+non-template overload with a matching friend declaration, keeps emphasis
+arithmetic unsigned, and avoids local alias shadowing. Ordinary
+`fmt::to_underlying(style)` calls retain their `uint64_t` result. Explicit
+`to_underlying<text_style>` calls should use the ordinary overload call.
+All five final workflows passed; issue #1 is closed. These fixes do not
+implement later color proposals or change numeric/persistence contracts.
+
 ### Experimental work beyond CleanUp
 
 `refactor/Crazy` was rebased on CleanUp. Its recorded local documentation tip
@@ -136,7 +152,7 @@ gates followed by explicit checks of both original color operands, including
 `text_style::set_emphasis()` replacement. It retains disabled fluent color
 setters that need further review. Performance of the table has not been
 benchmarked. This branch has not been approved for website inclusion; public
-Site version 15 does not add it to the candidate list.
+Site version 16 does not add it to the candidate list.
 
 ## Proposed branches and integration priorities
 
@@ -174,8 +190,8 @@ The revised eight-proposal plan was approved for website inclusion and published
 as public Site version 10, not accepted for integration. Create branches
 when implementation begins from the accepted baseline at that time; do not
 create speculative branches merely to populate the plan. A local Fluent branch
-was created early at the unchanged baseline; that does not mean implementation
-has begun. TermColorValue is now integrated. ConstColor remains at verified
+was initially created at the unchanged baseline; that historical observation
+does not establish the branch's current implementation status. TermColorValue is now integrated. ConstColor remains at verified
 `ed21ec1f`, based on the earlier CleanUp `8026a7d3`; no rebase onto the amended
 CleanUp, accepted TermColorValue, and Clang-fix baseline has been reported.
 Its historical test reports do not move it ahead of remaining non-breaking work.

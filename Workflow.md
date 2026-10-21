@@ -167,14 +167,55 @@ commit before pushing the accepted integration branch.
 Do not assume branch status from these documents. Verify current Git history
 before merging, rebasing, deleting branches, or recovering a merge.
 
+### Candidate CI must pass before the squash
+
+Terry adopted this release requirement on October 20, 2026: **push the candidate
+branch to GitHub and require all applicable CI workflows and jobs to pass for
+that exact candidate commit before running `git merge --squash` onto
+`FmtColor`.** Do not use a push to `FmtColor` as the first CI test of a
+candidate. Local checks remain useful but do not satisfy this prerequisite.
+
+Finish the candidate's applicable source, tests, documentation, and changelog
+before its final CI run. Terry pushes the branch, or explicitly authorizes the
+assistant to do so. Verify that local candidate HEAD and the pushed GitHub tip
+are the same full SHA. Check every applicable workflow and matrix job, not just
+the first green result. Queued, running, failed, cancelled, or missing expected
+results do not satisfy the requirement. Record intentional individual test
+skips separately from successful jobs; a cancelled job is not a test skip.
+
+Any amendment, rebase, additional commit, or changed integration baseline
+requires updating the candidate as appropriate, pushing it, and obtaining
+passing CI for the resulting SHA before the squash. Do not stage additional
+source, test, build, or documentation edits only on `FmtColor` after the
+candidate passed. If the proposed squash tree changes, return the changes to
+the candidate and repeat the gate. Preserve the agreed upstream-update policy;
+this requirement does not authorize unrelated rebases, commits, or pushes.
+
+For the current repository, candidate branch pushes trigger `linux`,
+`windows`, `macos`, and `doc`. Require every job in those workflows to
+pass. Pull-request-only checks, including `lint` and `fuzz`, must also pass
+when applicable to a candidate pull request; a push-only run does not claim
+those checks passed. Inspect the actual workflow triggers when releasing a
+candidate. Do not trigger release packaging, security workflows restricted to
+`main`, or publication just to manufacture an all-workflows result.
+
+The separate `FmtColor documentation` publication runs only after a push to
+`FmtColor`; it cannot be a candidate-branch prerequisite. After Terry commits
+and pushes the accepted squash, verify all applicable `FmtColor` workflows,
+including that publication. Only then report final integration CI success or
+close the associated bug as verified fixed. Link the candidate and accepted
+commit results separately.
+
 ### Terry's final commit and push
 
 Terry clarified the integration stopping point on October 20: the assistant
-normally prepares `git merge --squash`, leaves the result uncommitted for
+normally verifies the pushed candidate's passing CI, prepares
+`git merge --squash`, leaves the result uncommitted for
 his review, and provides a final commit message. Terry decides whether to
 commit and push. Do not infer permission to commit or push from permission
 to prepare the squash. Explicit later instructions can authorize a different
-workflow. TermColorValue followed this process.
+workflow. TermColorValue used the uncommitted squash review; GitHubCI also
+satisfied the candidate CI prerequisite before its squash.
 
 Terry separately chose to commit the small Clang compatibility fix directly
 to `FmtColor` as `723a9c18`, without a feature-branch squash or changelog
@@ -257,46 +298,43 @@ Once published, release tags remain fixed even if development is later rebased.
 Before accepting any proposed integration into `FmtColor`, including source,
 documentation, tests, or build changes:
 
-1. Confirm the starting state: the agreed baseline commit, branch dependencies,
-   tracked-file cleanliness, and preservation of unrelated local work.
-2. Review the complete proposed diff and confirm that it contains only the
-   agreed scope, including applicable tests, documentation, and changelog edits.
-3. Review source/API, binary/ABI, and stored-data compatibility separately.
-   Identify intentional breaks, required migration, and unresolved design
-   decisions; verify the Conventional Commit breaking-change metadata.
-4. Run relevant tests and required platform checks. Record configurations,
-   results, individual skips, and anything unverified. Distinguish fresh tests
-   from previously reported results. See [BuildAndTest.md](BuildAndTest.md).
-5. Review affected deliverable documentation under `/doc/`, including
-   `/doc/color/` when present or needed, and build it when changed. Prepare and
-   review the applicable `FmtColorChangeLog.md` entry for inclusion in the same
-   squash commit. Record a conclusion that no documentation or changelog edit
-   is needed when appropriate.
-6. Review coordination documents for changed decisions or instructions. Record
-   accepted decisions without presenting unresolved proposals as agreements.
-7. Prepare the detailed website explanation. After integration, link the exact
-   accepted commit and update any approved work-in-progress entry and expected
-   integration order. Do not describe a pending change as integrated. See
-   [Website.md](Website.md).
-8. Review the complete proposed result and final squash message with Terry and
-   obtain his approval before merging.
-9. After the approved integration, verify that exactly one intended squash
-   commit was added to `FmtColor` and inspect its contents. Push only with
-   Terry's approval; one explicit approval may cover both merge and push when
-   their scope is clear.
+1. Confirm the agreed baseline, dependencies, tracked-file cleanliness, and
+   preservation of unrelated local work.
+2. Review the complete candidate diff for the agreed scope. Review source/API,
+   binary/ABI, and stored-data compatibility separately; mark intentional
+   breaking changes and include migration guidance where needed.
+3. Run relevant local tests and platform checks. Finish applicable user
+   documentation and the changelog on the candidate, or record why an edit is
+   unnecessary. Prepare the squash message. Preserve explicit exceptions such
+   as Terry's decision to omit a changelog entry for the compiler fix.
+4. Push the completed candidate with Terry's authorization. Verify the exact
+   full SHA locally and on GitHub. Wait until **all applicable CI workflows and
+   matrix jobs pass for that SHA**, following the candidate CI requirement
+   above. This step must finish before any squash-merge preparation.
+5. Review affected coordination decisions and prepare the website explanation
+   without describing the candidate as integrated. Review the candidate and
+   final squash message with Terry and obtain authorization to prepare the
+   squash. If any candidate content or baseline changes, repeat step 4.
+6. Switch to the agreed `FmtColor` baseline and run `git merge --squash`.
+   Compare the staged result with the CI-tested candidate tree, run the
+   applicable integration checks, and stop uncommitted for Terry's review.
+   Never replace the squash with a fast-forward or ordinary merge commit.
+7. Terry normally performs the final commit and push. Verify exactly one
+   intended squash commit above the agreed baseline, its scope, and its match
+   to the tested tree. The assistant commits or pushes only if explicitly
+   authorized to do so.
+8. Verify CI for the actual pushed `FmtColor` SHA, including documentation
+   publication. Record run links, configurations, results, and skips. Passing
+   candidate CI does not substitute for this final verification. Resolve any
+   integration failure before marking a tracked bug completed.
+9. Publish the approved website explanation with the accepted commit and final
+   results, then update the coordination documents with confirmed publication
+   provenance. Update an issue or close it only when explicitly instructed.
 
-This is a review checklist, not a requirement to change every document for
-every integration. The Termux workaround was accepted and pushed on October 18,
-2026, as one squash commit,
-[`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98),
-including its changelog entry. The CMake option and warning-bearing test skips
-sufficiently explain the change without an upstream `/doc/` edit. Its website
-explanation was then published as Site version 5 before this coordination
-update. See BuildAndTest.md for the reported platform results. Revisit the
-user-documentation conclusion if the scope changes.
-
-Rebasing is governed by the upstream-update policy below; it is not a
-requirement for accepting each individual change.
+This checklist does not require changing every document for every integration.
+Record no-change conclusions when appropriate. Rebasing remains governed by
+the upstream-update policy below; it is not automatically required for each
+integration.
 
 ## Upstream updates
 
@@ -352,6 +390,28 @@ bump was made. Public Site version 15 was then successfully published.
 The compiler fix [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a) was committed and pushed by Terry afterward.
 Local compatibility checks do not imply that the full GitHub matrix passed;
 record current CI failures separately in BuildAndTest.md.
+
+## GitHubCI acceptance and cross-machine history
+
+Terry amended integer-conversion commit `3a6c5363` to `2ac6e0bd` on the
+second machine and pushed with `--force-with-lease`. Both commits have parent
+`723a9c18` and identical `color.h` and `build.bash` blobs. This machine
+was then synchronized to `2ac6e0bd`; no source changes were lost in that
+rewrite. A lease protects an expected remote ref, not the intended content;
+inspect local refs, remote refs, and reflogs before synchronizing another
+checkout after a published amendment. Do not force-push an older history merely
+to make the second checkout's push succeed.
+
+`fix/GitHubCI` tip `022c15e4` passed its four push-triggered workflows,
+including all 19 Linux jobs, before squash preparation. Codex staged only
+`color.h` on `FmtColor`, ran the local build, all 22 CTest executables,
+documentation, and strict C++11/14/17/23 checks, and stopped before committing.
+Terry committed and pushed accepted squash `c89d6dc1` above `2ac6e0bd`.
+Its tree matches the tested candidate. All five final workflows passed, and
+issue #1 was closed at Terry's explicit request. Public Site version 16 was
+published before this coordination update. No tag, version bump, or compiler-fix
+changelog entry was added. Earlier direct-to-FmtColor fixes are historical
+exceptions; future candidate releases follow the new pre-squash CI requirement.
 
 ## Coordination document maintenance
 

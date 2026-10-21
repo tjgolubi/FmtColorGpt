@@ -487,6 +487,8 @@ integration, or a measured speed comparison. CleanUp's padded output is separate
 
 The current accepted sequence is amended CleanUp [`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22),
 TermColorValue [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936), then the Clang fix [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a).
+Later accepted fixes `2ac6e0bd` and `c89d6dc1` and their final passing CI are
+recorded in the accepted GitHubCI section below.
 Earlier references to `8026a7d3`, `db224fb2`, and both candidates being
 unintegrated are historical. ConstColor remains pending at `ed21ec1f`,
 based on the older CleanUp; no rebase onto this current sequence is reported.
@@ -570,10 +572,10 @@ the actual CI warning flags.
 
 Terry committed and pushed `723a9c18` directly to `FmtColor` and explicitly
 declined a changelog change. Source working tree was clean afterward; no
-new tablet compiler/version report is available. Current CI results are
+new tablet compiler/version report was available at that point. Historical CI results are
 recorded in the snapshot below, not inferred from local passes.
 
-### Remaining Linux conversion-warning failure
+### Historical Linux conversion-warning failure
 
 The [new Linux run](https://github.com/tjgolubi/fmt/actions/runs/39514388290)
 for `723a9c18` failed in [GCC 11/C++11 Debug](https://github.com/tjgolubi/fmt/actions/runs/39514388290/job/118942930227).
@@ -598,6 +600,92 @@ CI snapshot verified October 20, 2026, at 23:26 UTC for `723a9c18`:
 
 No automatic retry, new source change, commit, or push was performed while
 updating these documents.
+
+## Accepted GitHubCI fix and validation, October 20, 2026
+
+The accepted history now continues from `723a9c18` through integer-conversion
+fix [`2ac6e0bd`](https://github.com/tjgolubi/fmt/commit/2ac6e0bda2d759f31c9e0e60b9463cc436578fe6)
+to GitHubCI squash [`c89d6dc1`](https://github.com/tjgolubi/fmt/commit/c89d6dc17044004ae86612298a244317e5d8b456).
+The latter's tree exactly matches pushed candidate
+`022c15e49f12d7a2d85b8f0b69ba4aefc28eb93b`. Only `include/fmt/color.h`
+changed in the squash; no tag, version bump, or changelog edit was added.
+
+### Candidate CI before the squash
+
+Candidate `022c15e4` passed Linux, Windows, macOS, and `doc` workflows before
+Codex prepared the squash. The [candidate Linux run](https://github.com/tjgolubi/fmt/actions/runs/39535043826)
+passed all 19 jobs, including Clang 3.6/C++11 Debug and Release and GCC
+11/C++11 Debug. This established the candidate SHA before integration.
+
+The new mandatory release policy requires this order for every candidate:
+complete candidate, push, verify every applicable workflow/job for that exact
+SHA, then prepare the squash. An amendment, rebase, new commit, or changed
+integration baseline requires fresh candidate CI. See
+[Workflow.md](Workflow.md#candidate-ci-must-pass-before-the-squash).
+Queued, failed, cancelled, or missing expected runs do not satisfy the policy.
+PR-only `lint` and `fuzz` must pass when applicable to a candidate PR;
+neither was triggered by these push-only runs. Publication restricted to
+`FmtColor` is checked after the accepted integration push.
+
+### Local staged-squash validation
+
+Codex ran `./build.bash` with MSYS GCC 15.3.0, Release/C++23,
+`FMT_TEST=ON`, `FMT_DOC=ON`, and `FMTCOLOR_SKIP=OFF`. Build, all
+**22 CTest executables**, and documentation generation passed. The existing
+syntax-anchor and Material notices were nonfatal. Strict header checks passed
+in C++11, C++14, C++17, and C++23 with:
+
+```bash
+g++ -std=c++11 -pedantic-errors -Wall -Wextra -Wconversion -Wshadow -Werror \
+  -Iinclude -fsyntax-only -x c++ include/fmt/color.h
+# Repeat with c++14, c++17, and c++23.
+```
+
+The staged tree matched `fix/GitHubCI`; HEAD remained `2ac6e0bd` until
+Terry committed and pushed `c89d6dc1`. This was not a fresh tablet run.
+
+### Final FmtColor CI and issue closure
+
+All five workflows completed successfully for accepted `c89d6dc1`:
+
+| Workflow | Result | Run |
+| --- | --- | --- |
+| Linux | All 19 jobs passed | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39545434878) |
+| Windows | Passed | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39545434859) |
+| macOS | Passed | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39545434852) |
+| Documentation | Passed | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39545434860) |
+| FmtColor documentation | Build and publication passed | [GitHub Actions](https://github.com/tjgolubi/fmt/actions/runs/39545434837) |
+
+Both Clang 3.6/C++11 jobs passed in this final Linux run.
+[Issue #1](https://github.com/tjgolubi/fmt/issues/1) was closed as completed at
+Terry's explicit request, with a comment linking the accepted fix and CI.
+Earlier failed/cancelled runs above remain historical, not current blockers.
+
+### Tablet logs supplied through issue #1
+
+The [tablet build output](https://github.com/tjgolubi/fmt/issues/1#issuecomment-6304776274)
+identifies **Clang 21.1.8**, invoked through Termux's `g++`, Release/C++23,
+`FMT_PEDANTIC=OFF`, and `FMTCOLOR_SKIP=ON`. The captured build reached
+100%. Its warning is in bundled GoogleTest `ImplicitCast_`, converting
+`char8_t` to `char32_t` (`-Wcharacter-conversion`); Terry chose to ignore
+it. It is separate from the resolved color-header conversion diagnostics.
+
+The separate [CTest log](https://github.com/tjgolubi/fmt/issues/1#issuecomment-6304566661)
+records 22 passing executables, all ten color tests passing, and seven expected
+Android fdsan test skips. Missing locales limited some locale-dependent checks.
+Neither log identifies the tested commit, so neither is attributed to the
+accepted `c89d6dc1` tree. `build/Testing/Temporary/LastTest.log` contains
+CTest output, not compiler warnings. Capture the full script output with:
+
+```bash
+set -o pipefail
+./build.bash 2>&1 | tee tablet-build.log
+```
+
+GitHub Issues is enabled on `tjgolubi/fmt`. Logs can be posted using
+`gh issue comment 1 --repo tjgolubi/fmt --body-file tablet-build.log`.
+`gh` was available on the tablet but not found on the PC's Bash PATH;
+the GitHub connector handled issue closure without installing a PC CLI.
 
 ## Planned Fluent, VarColor, and Palette checks
 

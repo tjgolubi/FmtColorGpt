@@ -26,6 +26,44 @@ repository. Its implementation does not belong in the {fmt} fork.
 
 ## Current publication
 
+Public Site **version 16** was successfully published on October 20, 2026,
+before this coordination update. The native deployment succeeded and the live
+accepted-fix section was checked in the browser. Public access was preserved.
+
+- [Integrated changes](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html#githubci)
+  links accepted GitHubCI squash `c89d6dc1`, the matching candidate tree,
+  all five passing workflows and 19 Linux jobs, local validation, and closed
+  issue #1. Separate linked sections explain conversion fix `2ac6e0bd` and
+  the targeted Clang 3.6 workaround `723a9c18`.
+- The stale unresolved-failure note now points to the accepted fixes. The
+  explanation distinguishes passed compiler workflows from PR-only lint,
+  documents the non-template text-style underlying overload, and separates
+  historical tablet evidence from validation of the accepted commit.
+- The homepage summarizes the resolution and links GitHub Issues. Work in
+  progress records the accepted fixes and current baseline without changing
+  remaining proposal priorities or claiming ConstColor has been rebased.
+- The established design, demonstration, assets, public audience, and existing
+  accepted explanations are preserved. No source or coordination files were
+  edited as part of that website publication.
+
+All three pages passed link/anchor, duplicate-ID, and whitespace checks;
+66 local links/anchors were checked. The browser preview and live page showed
+the accepted commit, closed issue, and 19 passing Linux jobs. No fresh library
+tests were run solely for publication; the page links existing test evidence.
+
+Publication provenance:
+
+- Site source commit: `9aac96fbe9956733b0f4869204eb115540ce1e81`.
+- Saved version 16:
+  `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_0ae87c4cbf408191b3fe121de09f4f26`.
+- Successful deployment: `appgdep_6ad845bd6bdc81918279f26213f5def8`.
+
+The subsequent mandatory pre-squash CI policy is recorded in Workflow.md by
+this coordination update. Version 16 describes candidate CI before integration;
+it does not claim that every later policy detail has already been published.
+
+### Historical version 15
+
 The public Site was successfully published on October 20, 2026, as **version 15**.
 The native deployment returned success and the live TermColorValue section
 was verified in the browser. Existing public access was preserved.
@@ -331,15 +369,15 @@ now integrated. On October 18 he approved updating the website with all six
 proposals from the planning discussion. The table below now reflects the revised
 coordination plan, including ConvertColors, published as Site version 10 on
 October 18, with accepted CleanUp and candidate status refreshed in
-version 15 on October 20. TermColorValue is now integrated:
+version 16 on October 20. TermColorValue and GitHubCI are now integrated:
 
 | Priority | Proposal | Source / status |
 | --- | --- | --- |
-| 1 | `feat/Fluent` | Planned emphasis-only setters/getters. Local empty baseline branch exists; no implementation claim or remote branch link. |
+| 1 | `feat/Fluent` | Planned emphasis-only setters/getters. Local branch exists; its current implementation status requires source review. |
 | 2 | `feat/VarColor` | Planned color variant, constructor, fluent color operations, presence aliases, and clearing; builds on the accepted sentinel. C++17+ variant APIs; existing older-mode APIs preserved. |
 | 3 | `feat/Palette` | Planned cube/grayscale extension of VarColor. Preserve current operators and review discriminator `10` assumptions. |
 | Order open | `feat/ConvertColors` | Planned branch for the existing explicit RGB-promotion design and specified Xterm terminal palette. Exact APIs and dependencies remain open; scope unchanged. |
-| Later; order open | `feat/ConstColor` | Verified GitHub tip `ed21ec1fb95142263587d28d68d049187ed44366`, above historical `8026a7d3`; not yet rebased onto current `723a9c18`; namespace-constant breaking candidate with committed migration documentation and October 20 reported test pass. |
+| Later; order open | `feat/ConstColor` | Verified GitHub tip `ed21ec1fb95142263587d28d68d049187ed44366`, above historical `8026a7d3`; not yet rebased onto current `c89d6dc1`; namespace-constant breaking candidate with committed migration documentation and October 20 reported test pass. |
 | Later; order open | `feat/Blend` | Planned explicit blending plus breaking strict composition for both `|` and `|=`. |
 | After required foundations | `feat/StyledText` | Planned nested text, `absolute`, and lazy blending. Exact dependencies remain open. |
 

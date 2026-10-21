@@ -80,11 +80,13 @@ The accepted history on `FmtColor` is now:
 | Amended CleanUp | [`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22) | Packed colors, explicit RGB conversion and OR, emphasis-valued OR, empty getters, `no_color_t`/`no_color`, underlying support, and eight-job builds. Replaces the initially published `8026a7d3`. |
 | TermColorValue | [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936) | One squash above amended CleanUp; terminal indices 0–15 with unchanged emitted SGR, boundary tests, migration guide, and generated fork changelog. |
 | Clang compatibility fix | [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a) | Direct commit by Terry to `FmtColor`; workaround for Clang 3.6 and earlier only. No changelog edit, at Terry's explicit direction. |
+| Explicit integer conversions | [`2ac6e0bd`](https://github.com/tjgolubi/fmt/commit/2ac6e0bda2d759f31c9e0e60b9463cc436578fe6) | Intentional narrow casts, typed masks, unsigned SGR arithmetic, and documentation-environment reuse; amended replacement for identical-tree `3a6c5363`. |
+| GitHubCI squash | [`c89d6dc1`](https://github.com/tjgolubi/fmt/commit/c89d6dc17044004ae86612298a244317e5d8b456) | One squash above `2ac6e0bd`, matching tested candidate `022c15e4`; all five final workflows passed. |
 
 Terry performed the final commits and pushes. During TermColorValue integration,
 the assistant prepared the squash and stopped before committing for Terry's
 review. No release tag or version bump was created. The source working tree was
-clean after the Clang fix was pushed.
+clean after the GitHubCI squash was committed and pushed.
 
 CleanUp's public additions include `fmt::underlying_type` and
 `fmt::to_underlying()`. The internal `detail::color_type` uses minimal
@@ -100,19 +102,29 @@ GitHub CI runs automatically in Terry's fork on pushes. The first accepted
 TermColorValue run found the deleted-template specialization problem on
 Clang 3.6. The subsequent Linux run for `723a9c18` failed on GCC 11/C++11
 conversion warnings treated as errors; other Linux jobs, including Clang 3.6,
-were cancelled. That remaining issue has not been fixed. See
-[BuildAndTest.md](BuildAndTest.md#github-actions-and-the-clang-fix-october-20-2026)
-for exact runs and the latest recorded snapshot.
+were cancelled. The conversion and remaining compiler issues are now fixed
+through `c89d6dc1`. All five final workflows, including all 19 Linux jobs,
+passed. [Issue #1](https://github.com/tjgolubi/fmt/issues/1) is closed as completed. See
+[BuildAndTest.md](BuildAndTest.md#accepted-githubci-fix-and-validation-october-20-2026)
+for the historical failures and the accepted-fix validation record.
 
 ConstColor remains an unintegrated candidate at verified tip `ed21ec1f`,
 based on historical CleanUp `8026a7d3`. A rebase onto current `FmtColor`
 has not been reported. TermColorValue is no longer pending.
 
-Public Site **version 15** documents accepted TermColorValue, amended CleanUp,
-and the remaining proposals. Publication succeeded before this coordination
-update. Its historical CI note predates the pushed Clang fix; this coordination
-update does not publish a new Site version. See
+Public Site **version 16** documents the accepted compiler fixes and passing
+CI, replaces the stale unresolved-failure note, and links closed issue #1 and
+the fork's bug tracker. Publication succeeded before this coordination update. See
 [Website.md](Website.md#current-publication) for provenance.
+
+### Release prerequisite
+
+Push the completed candidate branch and require **all applicable GitHub CI
+workflows and jobs to pass for its exact SHA before the squash-merge**.
+Changes after validation require a new push and passing CI. Codex then normally
+prepares the squash uncommitted for Terry's review; Terry commits and pushes.
+Verify final `FmtColor` CI, including documentation publication, afterward.
+See [Workflow.md](Workflow.md#candidate-ci-must-pass-before-the-squash).
 
 ## Historical candidate documentation update, October 19, 2026
 
@@ -139,7 +151,7 @@ for publication provenance and the Windows/MSYS publishing lessons.
 
 ## Current development plan
 
-From current accepted `FmtColor` tip `723a9c18`, prioritize the remaining
+From current accepted `FmtColor` tip `c89d6dc1`, prioritize the remaining
 non-breaking work for the {fmt}-compatible release: `feat/Fluent`,
 then `feat/VarColor`, then `feat/Palette`. Fluent covers emphasis only; VarColor
 covers color values, constructors, and fluent color operations. Palette extends
