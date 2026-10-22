@@ -2,448 +2,191 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-**Working draft, updated October 20, 2026.** Review and adoption are in progress.
+Updated October 21, 2026.
 
-## Repository roles
+## Authorization and scope
 
-`tjgolubi/fmt` contains the deliverable source, tests, library documentation,
-and our change log. Upstream is `fmtlib/fmt`; our `FmtColor` branch is the
-integration/development branch above upstream `main`.
+Modify project files only when Terry instructs us in the imperative mood.
+Questions and statements of intent are discussion, not edit authorization.
+Read-only inspection, CI checks, and other actions needed to answer a prompt are
+allowed. This reflects Terry's October 21 clarification of his earlier wording.
 
-`tjgolubi/FmtColorGpt` contains coordination documents that apply across source
-branches. Its default branch is `master`. Keep these documents separate from
-the deliverable and from the Sites implementation.
+Explain proposed changes before editing. An instruction authorizes the work
+needed within its scope; it does not authorize unrelated maintenance. Preserve
+explicit stopping points such as "stop before committing." Discuss one change,
+implement it, verify it, and review it before moving on.
 
-The Sites project is maintained separately. See [Website.md](Website.md).
+Library and coordination commits, pushes, merges, branch switches, rebases,
+deletions, and stashes require authorization for the relevant operation.
+Terry normally performs the final commit and push. Do not infer that permission
+from authorization to edit or prepare a squash. Website updates follow the
+separate publishing procedure in [Website.md](Website.md).
 
-## Git environment on the Windows PC
+Before edits or branch changes, inspect the actual branch, commit, working tree,
+and affected source. Resolve tracked changes from unrelated work with Terry;
+do not discard them or stash automatically. Preserve concurrent edits and
+re-read a file if it changed while preparing an update.
 
-Use MSYS2 Git for both the `fmt` and `FmtColorGpt` repositories, including
-status, diffs, commits, fetches, and pushes. In an MSYS shell, use `/usr/bin/git`.
-When invoking Git from PowerShell, explicitly select
-`C:\msys64\usr\bin\git.exe` or run it through the MSYS shell. Check executable
-provenance before Git operations; a bare `git` in PowerShell may resolve to
-Codex's bundled Windows Git. Do not use that bundled Git for these repositories.
-Use the existing MSYS2 Git identity and SSH configuration for commits and
-network operations rather than replacing them with Windows-specific settings.
+Untracked convenience scripts, archives, and logs do not make the checkout
+unclean. Preserve them; mention them only when they affect the task, may be
+included accidentally, or could conflict with a branch switch. Do not include
+them in commits or stashes automatically.
 
-This requirement applies to Terry's source and coordination repositories, not
-the separate Sites source checkout. On this PC, the Sites Node helper needs
-native Windows Git so that checkout paths use Windows syntax. Keep native Git
-ahead of MSYS2 tools in the helper's process-local PATH. Do not change the
-source repositories' Git configuration to accommodate Sites. See
-[Website.md](Website.md#windows-publishing-environment) for Bash and tar setup.
+Keep edits minimal and follow the existing source style. Avoid unrelated
+cleanup, declaration changes, or broad toolchain changes. Preserve each existing
+file's line endings; create new text files with LF. Git uses
+`core.autocrlf=false` and `core.eol=lf`; inspect attributes or overrides before
+assuming a checkout follows those settings.
 
-### MSYS PATH, git-cliff, and SSH
+## Repositories and tools
 
-Terry explicitly removed UCRT64 from the PC on October 20. Do not use or
-reinstall it for this project. The MSYS command PATH is:
+| Repository | Role |
+| --- | --- |
+| `tjgolubi/fmt` | Library source, tests, user documentation, and fork changelog. Current development branch: `FmtColorDev`. |
+| `tjgolubi/FmtColorGpt` | These coordination documents; default branch `master`. |
+| Sites source repository | Separate website implementation, managed by the Sites helper. |
 
-`/home/tjgolubi/.cargo/bin:/usr/bin:/c/Windows/System32:/c/Windows`
+Use **MSYS2 Git** for `fmt` and `FmtColorGpt`: `/usr/bin/git` in MSYS, or
+`C:\msys64\usr\bin\git.exe` from PowerShell. Verify executable provenance;
+bare `git` in PowerShell may select Codex's bundled native Git. The Sites Node
+helper instead needs native Windows Git; see
+[Website.md](Website.md#windows-publishing).
 
-The reinstalled git-cliff 2.14.2 is the MSYS/Cygwin build at
-`/home/tjgolubi/.cargo/bin/git-cliff.exe`, built with
-`--no-default-features --target x86_64-pc-cygwin`. It depends on
-`msys-2.0.dll`, not UCRT64; optional remote integrations were omitted.
-Use it with the existing `cliff.toml`; no UCRT64 PATH is needed.
+Terry removed UCRT64. Do not use or reinstall it for this project. The MSYS PATH
+is `/home/tjgolubi/.cargo/bin:/usr/bin:/c/Windows/System32:/c/Windows`.
+Git-cliff 2.14.2 is the MSYS/Cygwin build at
+`/home/tjgolubi/.cargo/bin/git-cliff.exe`, built without default features for
+`x86_64-pc-cygwin`; it does not require UCRT64.
 
-Command-line Git now uses the existing SSH agent successfully. In each
-nonlogin MSYS command needing SSH, source `~/.ssh/agent.env` to import
-`SSH_AUTH_SOCK` and the recorded agent state. Do not start replacement agents,
-change keys, or replace Git identity to work around a missing environment.
-The GitHub connector remains useful for remote inspection; local Git state,
-squashes, and diffs use MSYS Git.
+For SSH in a nonlogin MSYS shell, source `~/.ssh/agent.env`. Reuse the existing
+agent, keys, Git identity, and SSH configuration; do not replace them to solve
+an environment problem. Use the GitHub connector for remote inspection when
+appropriate. Keep credentials out of files, output, and handoffs.
 
-## Agree, implement, verify
+The library remotes are `origin` → `tjgolubi/fmt` and `upstream` → `fmtlib/fmt`.
+Keep fork changes on development branches and `main` aligned with upstream.
 
-Discuss and agree on one change, implement it on a focused branch, test it,
-review it, and accept it before moving to the next change. A design document
-records intentions; it is not blanket implementation authorization.
+## Branches and integration
 
-Questions and tentative proposals are discussion. Explicit instructions
-authorize the requested action. Do not treat a possible future feature as an
-approved current task. Explain proposed changes before making them. Obtain
-Terry's approval before merging or pushing.
+The current baseline is recorded in [README.md](README.md#current-baseline).
+Do not continue from an older branch merely because it appears in historical
+documents. Verify refs and ancestry before changing history.
 
-On October 19, Terry explicitly clarified: make no changes unless he
-specifically requests them. A review, status report, or discussion does not
-authorize edits, branch switches, commits, or pushes. Read-only inspection can
-support the discussion. A requested documentation or website update authorizes
-the edits needed for that update; website publication follows Website.md.
-Do not extend that request into unrelated coordination or repository changes.
-This clarification supersedes broader standing maintenance wording.
+Create focused branches when implementation begins from the agreed baseline.
+Record the proposed name first. Use lowercase slash prefixes and PascalCase
+subjects, such as `feat/Fluent`, `fix/Termux`, or `doc/ColorGuide`; other suitable
+prefixes are allowed. A name or design entry neither creates a branch nor grants
+approval to implement it or include it on the website.
 
-Terry further specified: change things only when he uses the
-imperative mood, for example, "Please update the tests." Questions such as
-"Can you update the tests?" and statements of intent remain discussion and
-do not authorize changes. Read-only inspection can support an answer. This
-applies to source, tests, documentation, Git operations that change state, and
-website changes. An imperative request authorizes the necessary work within
-its scope; honor any stopping point such as "stop before committing."
+Each accepted feature integration is one squash commit containing applicable
+source, tests, documentation, and changelog changes. Do not substitute a
+fast-forward or ordinary merge. The current consolidated feature commit and
+separate publication fix are recorded as they actually exist; this policy does
+not authorize rewriting them.
 
-Before editing, inspect the actual branch, commit, working tree, source, and
-tests. Preserve unrelated work. Attached headers and old handoffs may be stale;
-they do not establish the current source baseline.
+### CI gate and acceptance
 
-Before starting a task or switching branches, ensure there are no staged or
-unstaged changes to tracked files left from other work. Commit those changes
-or stash them in agreement with Terry before proceeding. Changes made as part
-of the task in progress are expected; account for them before switching away.
-Do not discard local work to make the checkout clean.
+1. Confirm scope, baseline, dependencies, and preservation of local work.
+2. Review the complete candidate. Assess source/API, binary/ABI, and stored-data
+   compatibility separately. Unchanged size does not prove ABI compatibility.
+3. Finish applicable source, tests, user documentation, and changelog. Run the
+   relevant local checks and prepare the proposed squash message.
+4. Terry pushes the candidate, or explicitly authorizes the assistant to push.
+   Verify local and GitHub full SHAs match. **Every applicable workflow and
+   matrix job must pass for that exact SHA before squash preparation.** Queued,
+   running, failed, cancelled, or missing expected jobs are not passes.
+5. Obtain authorization for the squash onto the agreed development baseline.
+   Prepare it, verify the resulting tree and relevant integration checks, and
+   stop uncommitted for Terry's review unless instructed otherwise.
+6. Terry normally commits and pushes. Verify the intended commit structure and
+   all applicable CI for the resulting SHA, including documentation publication
+   on `FmtColorDev`. Candidate results do not replace final integration checks.
+7. Publish an authorized website update before recording its confirmed
+   publication in coordination documents. Update or close an issue only when
+   instructed; a successful fix does not by itself authorize closure.
 
-Untracked files do not make the workspace unclean. Preserve them and do not
-repeatedly report them. Raise them only when they affect the task, might be
-included accidentally in a commit, or could conflict with a branch switch.
-Convenience scripts, archives, and debugging output may intentionally remain
-untracked. Do not automatically include untracked files in a commit or stash.
+Any amendment, new commit, rebase, changed baseline, or changed squash tree needs
+fresh CI for the resulting SHA. Never rely on earlier validation for new code.
+The four ordinary push workflows are `linux`, `windows`, `macos`, and `doc`.
+Pull-request-only checks such as `lint` and `fuzz` must pass when applicable;
+push results do not establish those passes. Do not trigger unrelated release,
+security, or publication workflows merely to manufacture a broader result.
 
-Keep changes minimal and in the existing source style. Change only affected
-test lines; do not perform an unrelated cleanup or convert working declarations
-to `auto`. Prefer `auto` where an affected declaration needs adjustment.
+Record intentional skips and exclusions explicitly. The current temporary
+GCC 16 exclusion and `fail-fast: false` are tracked in
+[issue #2](https://github.com/tjgolubi/fmt/issues/2), not treated as GCC 16 coverage.
 
-### Line endings
+## Commit messages and changelog
 
-Keep files as they are stored in the repository. Preserve existing CRLF files;
-do not normalize them as part of unrelated edits. Create new text files with
-LF line endings. Windows Git must not automatically convert checked-out files
-to CRLF: use `core.autocrlf=false` and `core.eol=lf`. These values were set in
-Terry's global Git configuration and locally in the `fmt` checkout on October
-19, 2026. Inspect any repository attributes or overriding settings before
-assuming another checkout follows that policy. Do not introduce a blanket
-line-ending conversion or renormalization.
-
-## Branches and commits
-
-Create focused development branches from the agreed `FmtColor` baseline. Use
-conventional lowercase slash prefixes, such as `feat/`, `fix/`, `doc/`, `test/`,
-`build/`, and `refactor/`; other appropriate prefixes are allowed. Use PascalCase
-after the prefix, for example `fix/Termux` or `feat/ConstColor`.
-Record proposed branch names before creating their Git branches. Create a
-branch when implementation begins from the accepted baseline then, avoiding
-repeated rebases of speculative branches. An empty branch is not evidence of
-implementation. Prioritize non-breaking additions for the {fmt}-compatible
-release; keep known breaking work explicit and later. See CppDesign.md for
-the provisional feature plan.
-
-Branches may have dependencies; record those rather than assuming a fixed
-integration order. Branch prefixes describe purpose, not acceptance or approval
-to include a branch on the website. See [Website.md](Website.md) for that policy.
-
-Use Conventional Commit messages compatible with git-cliff processing:
-
-```text
-feat(color): named RGB constants
-fix(test): optional skips for FILE descriptor tests
-test(color): explicit packed RGB conversion coverage
-doc(color): RGB conversion examples
-doc(changelog): FmtColor change log update
-```
-
-Mark intentional breaking changes with `!` and explain them in a
-`BREAKING CHANGE:` footer. For example, replacing the `fmt::color` type with a
-namespace changes code that names the enum type even when common color
-expressions remain valid.
-
-Review source/API compatibility, binary/ABI compatibility, and stored-data
-compatibility separately. Passing tests supports acceptance but does not alone
-establish compatibility. An unchanged object size does not guarantee an
-unchanged binary representation. Distinguish changes to supported contracts
-from private implementation details, and state actual effects accurately.
-Keep changelog compatibility notes brief and specific, with migration guidance
-where needed; put detailed rationale on the website.
-
-Intermediate commits can help development and review. Each accepted integration
-adds **exactly one squash commit to `FmtColor`**, including its applicable source,
-tests, documentation, and changelog changes. The integration branch must not
-expose the intermediate development commits or require a separate changelog
-commit for the same integration. Do not substitute a fast-forward or an ordinary
-merge commit for the squash commit.
-
-Review the complete proposed result and final squash message with Terry before
-merging. Obtain his approval before the merge and before pushing; one explicit
-approval may cover both actions when their scope is clear. Verify the resulting
-commit before pushing the accepted integration branch.
-
-Do not assume branch status from these documents. Verify current Git history
-before merging, rebasing, deleting branches, or recovering a merge.
-
-### Candidate CI must pass before the squash
-
-Terry adopted this release requirement on October 20, 2026: **push the candidate
-branch to GitHub and require all applicable CI workflows and jobs to pass for
-that exact candidate commit before running `git merge --squash` onto
-`FmtColor`.** Do not use a push to `FmtColor` as the first CI test of a
-candidate. Local checks remain useful but do not satisfy this prerequisite.
-
-Finish the candidate's applicable source, tests, documentation, and changelog
-before its final CI run. Terry pushes the branch, or explicitly authorizes the
-assistant to do so. Verify that local candidate HEAD and the pushed GitHub tip
-are the same full SHA. Check every applicable workflow and matrix job, not just
-the first green result. Queued, running, failed, cancelled, or missing expected
-results do not satisfy the requirement. Record intentional individual test
-skips separately from successful jobs; a cancelled job is not a test skip.
-
-Any amendment, rebase, additional commit, or changed integration baseline
-requires updating the candidate as appropriate, pushing it, and obtaining
-passing CI for the resulting SHA before the squash. Do not stage additional
-source, test, build, or documentation edits only on `FmtColor` after the
-candidate passed. If the proposed squash tree changes, return the changes to
-the candidate and repeat the gate. Preserve the agreed upstream-update policy;
-this requirement does not authorize unrelated rebases, commits, or pushes.
-
-For the current repository, candidate branch pushes trigger `linux`,
-`windows`, `macos`, and `doc`. Require every job in those workflows to
-pass. Pull-request-only checks, including `lint` and `fuzz`, must also pass
-when applicable to a candidate pull request; a push-only run does not claim
-those checks passed. Inspect the actual workflow triggers when releasing a
-candidate. Do not trigger release packaging, security workflows restricted to
-`main`, or publication just to manufacture an all-workflows result.
-
-The separate `FmtColor documentation` publication runs only after a push to
-`FmtColor`; it cannot be a candidate-branch prerequisite. After Terry commits
-and pushes the accepted squash, verify all applicable `FmtColor` workflows,
-including that publication. Only then report final integration CI success or
-close the associated bug as verified fixed. Link the candidate and accepted
-commit results separately.
-
-### Terry's final commit and push
-
-Terry clarified the integration stopping point on October 20: the assistant
-normally verifies the pushed candidate's passing CI, prepares
-`git merge --squash`, leaves the result uncommitted for
-his review, and provides a final commit message. Terry decides whether to
-commit and push. Do not infer permission to commit or push from permission
-to prepare the squash. Explicit later instructions can authorize a different
-workflow. TermColorValue used the uncommitted squash review; GitHubCI also
-satisfied the candidate CI prerequisite before its squash.
-
-Terry separately chose to commit the small Clang compatibility fix directly
-to `FmtColor` as `723a9c18`, without a feature-branch squash or changelog
-edit. This is a recorded exception, not a replacement for the normal workflow.
-
-## Change log
+Use Conventional Commits compatible with `cliff.toml`, for example
+`feat(color): named RGB constants` or `fix(docs): publish the user guide`.
+Mark deliberate breaks with `!` and a `BREAKING CHANGE:` footer. Describe actual
+effects without promising stable numeric or binary representations.
 
 Maintain `FmtColorChangeLog.md` separately from upstream `ChangeLog.md`.
-Keep entries concise and descriptive, with accurate scope and brief compatibility
-or migration notes where needed. Detailed rationale belongs on the website.
-Coordination-document revisions use this repository's own history and are not
-library release entries by default.
+Keep entries concise; detailed rationale belongs on the website. Coordination
+revisions are not library release entries. Preserve explicit decisions to omit
+an entry for a particular fix rather than adding one later without instruction.
 
-### Tool version and adopted configuration
+Use git-cliff **2.14.2** and an explicit accepted-history range after the chosen
+upstream baseline. Exclude upstream history and intermediate feature commits.
+For the current baseline, a preview is:
 
-Use the same verified git-cliff version on the PC and tablet. Version 2.14.2 is
-the current baseline and was verified on both platforms. On October 18, 2026,
-`cliff.toml` and the initial `FmtColorChangeLog.md` were adopted in accepted
-commit [`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0),
-alongside the shared build script and Python bytecode ignore rule. That single
-squash commit was pushed to `FmtColor`. The configuration is now tracked;
-its fork release-label format remains undecided. See BuildAndTest.md for the
-recorded platform results.
+```bash
+git cliff --config cliff.toml --offline --no-exec \
+  0fc31633e7d53ac895ae0a688b83b7d44f0b0c1f..FmtColorDev
+```
 
-InsetXml's unfinished configuration is a useful reference, not an established
-working release template. Verify the actual executable version and environment
-on each machine before assuming a configuration or modernization works there.
+Before the final squash, preview its message with `--with-commit` so the entry
+can be included in that commit. Inspect output before replacing the changelog.
+`cliff.toml`'s baseline comment may lag the current branch; verify the range.
+Do not invent a prospective hash or blindly regenerate unrelated entries.
 
-### Commit selection and parser rules
+Keep bookkeeping exclusions before general parsers, protect breaking commits,
+retain deterministic groups, and fail on unexpected nonconventional commits.
+The `fmtcolor-` tag namespace separates fork tags from imported upstream tags;
+tag filtering alone does not select the correct history.
 
-Generate entries from accepted project commits on `FmtColor`, using an explicit
-range after the agreed upstream baseline. Exclude upstream history and feature
-branches' intermediate development commits. Imported upstream release tags do
-not define FmtColor release sections. The configuration uses a separate `fmtcolor-` tag
-namespace; its final release-label format remains undecided. Tag filtering alone
-does not select the correct branch or exclude upstream commits.
+Do not automatically bump inherited `FMT_VERSION` or assign a fork release
+number. Fork versioning remains undecided. Record the exact upstream baseline;
+a development header's version is not proof of a tagged release. Push only
+authorized tags; published release tags stay fixed.
 
-Parser rules use the first matching rule. Bookkeeping exclusions such as
-`doc(changelog)` must precede the broad documentation rule. Use
-`protect_breaking_commits = true` so intentional breaking changes cannot be
-silently excluded. Exclusion rules must also assign a group so a protected
-breaking commit remains classified. Keep section order explicit and fail on
-nonconventional accepted commits rather than silently hiding them.
+## Upstream and cross-machine updates
 
-The PC previews checked section ordering, ordinary fix entries, breaking-change
-markers and compatibility descriptions, changelog-only exclusions, protection of
-breaking commits matching exclusions, rejection of nonconventional messages,
-and the empty accepted-project range. Representative tablet previews completed
-before adoption, confirming that git-cliff works on the tablet. The platform
-verification prerequisite was satisfied without changing the workflow policy.
+Continue on the agreed upstream baseline. Inspect upstream changes before
+incorporating them. Update the development baseline when a relevant upstream
+change warrants it, and before offering the completed extension upstream;
+do not rebase unrelated work merely because upstream advanced.
 
-### One commit per accepted integration
+A fast-forward update of `main` is separate from rebasing development branches:
 
-Review the final squash message and preview its entry with `--with-commit`
-before creating the accepted commit. Include the applicable changelog update
-in that same squash commit, rather than adding a separate bookkeeping commit
-afterward. Do not invent a commit hash for a prospective entry. Review generated
-output before replacing `FmtColorChangeLog.md`; avoid duplicate entries when
-regenerating it.
+```bash
+git fetch upstream
+git switch main
+git merge --ff-only upstream/main
+git push origin main
+```
 
-Terry explicitly declined a changelog edit for the Clang 3.6 compatibility
-fix `723a9c18`. Preserve that decision; do not add a compensating entry or
-regenerate the changelog solely for this fix without a new instruction.
+These commands are instructions for an authorized update, not standing
+permission to run them. Check local changes and coordinate branch switches.
 
-### Fork versions and releases
+Before rewriting published history, record the old tip and coordinate with
+other checkouts. Resolve conflicts deliberately, compare content, rerun checks,
+and use an authorized `--force-with-lease` rather than unguarded force.
+A lease protects the expected remote ref, not the intended content. Inspect
+refs and reflogs before synchronizing a second machine; never force-push older
+history simply to make a rejected push succeed. Refresh website commit links
+after an authorized rewrite.
 
-Do not automatically bump upstream's `FMT_VERSION` from our Conventional Commit
-types. Keep the inherited version identifier separate from our fork release
-identity. Decide FmtColor's release labels explicitly before enabling automatic
-version bumping; the adopted configuration does not enable it.
+## Coordination maintenance
 
-Record the exact upstream baseline commit as well as the version declared in
-its source. A development header's version number does not establish that the
-baseline is a tagged upstream release. Upstream tags may remain local for
-reference. Push only explicitly approved release tags, not every local tag.
-Once published, release tags remain fixed even if development is later rebased.
+Read these documents before new work and state when required material is
+unavailable or stale. Update affected decisions without maintaining competing
+authoritative copies in attachments. Keep proposals, implemented behavior,
+tested results, and acceptance distinct.
 
-## Acceptance checklist
-
-Before accepting any proposed integration into `FmtColor`, including source,
-documentation, tests, or build changes:
-
-1. Confirm the agreed baseline, dependencies, tracked-file cleanliness, and
-   preservation of unrelated local work.
-2. Review the complete candidate diff for the agreed scope. Review source/API,
-   binary/ABI, and stored-data compatibility separately; mark intentional
-   breaking changes and include migration guidance where needed.
-3. Run relevant local tests and platform checks. Finish applicable user
-   documentation and the changelog on the candidate, or record why an edit is
-   unnecessary. Prepare the squash message. Preserve explicit exceptions such
-   as Terry's decision to omit a changelog entry for the compiler fix.
-4. Push the completed candidate with Terry's authorization. Verify the exact
-   full SHA locally and on GitHub. Wait until **all applicable CI workflows and
-   matrix jobs pass for that SHA**, following the candidate CI requirement
-   above. This step must finish before any squash-merge preparation.
-5. Review affected coordination decisions and prepare the website explanation
-   without describing the candidate as integrated. Review the candidate and
-   final squash message with Terry and obtain authorization to prepare the
-   squash. If any candidate content or baseline changes, repeat step 4.
-6. Switch to the agreed `FmtColor` baseline and run `git merge --squash`.
-   Compare the staged result with the CI-tested candidate tree, run the
-   applicable integration checks, and stop uncommitted for Terry's review.
-   Never replace the squash with a fast-forward or ordinary merge commit.
-7. Terry normally performs the final commit and push. Verify exactly one
-   intended squash commit above the agreed baseline, its scope, and its match
-   to the tested tree. The assistant commits or pushes only if explicitly
-   authorized to do so.
-8. Verify CI for the actual pushed `FmtColor` SHA, including documentation
-   publication. Record run links, configurations, results, and skips. Passing
-   candidate CI does not substitute for this final verification. Resolve any
-   integration failure before marking a tracked bug completed.
-9. Publish the approved website explanation with the accepted commit and final
-   results, then update the coordination documents with confirmed publication
-   provenance. Update an issue or close it only when explicitly instructed.
-
-This checklist does not require changing every document for every integration.
-Record no-change conclusions when appropriate. Rebasing remains governed by
-the upstream-update policy below; it is not automatically required for each
-integration.
-
-## Upstream updates
-
-Continue development on the agreed upstream baseline. Plan to rebase `FmtColor`
-onto upstream `main` when the extension work is complete, before submitting it
-upstream. Rebase earlier only when an upstream change directly affects the
-work in progress.
-
-Fetch and inspect upstream changes before incorporating them. Record the exact
-baseline commit, and keep the fork's changes small and understandable.
-
-Because rebasing rewrites history, coordinate it with anyone using the branch.
-Record the old tip, resolve conflicts deliberately, and rerun relevant tests.
-If a rewritten published branch must be updated, use an agreed
-`--force-with-lease` operation rather than an unguarded force push. Update
-dependent feature branches deliberately after the integration baseline is
-validated. Do not rebase unrelated work merely because an upstream update exists.
-
-Commit hashes used by Sites may change during rebases. Refresh links while
-preserving the explanation of the accepted change.
-
-## Historical initial CleanUp integration, October 20, 2026
-
-Terry accepted the explicit packed RGB construction and emphasis-OR result-type
-changes after discussing their source compatibility effects. He requested
-CleanUp's squash preparation, stopping before a commit. The assistant staged
-the feature and documentation with the changelog generated by git-cliff 2.14.2,
-and prepared a message describing both breaks. It stopped with `FmtColor` HEAD
-unchanged at `f913e54c`, as requested.
-
-Terry subsequently committed and pushed the accepted result as
-[`8026a7d3`](https://github.com/tjgolubi/fmt/commit/8026a7d33bf2a9ec902c8b2e842bcedd30336bf1),
-verified locally and through the GitHub connector. This is one squash commit
-above `f913e54c`, including source, tests, guide, parallel build invocation,
-and changelog. It did not create a release tag or change the inherited version.
-The remaining candidate priorities stay provisional. See BuildAndTest.md and
-Website.md for validation and confirmed public Site version 14.
-
-## Subsequent amendments and TermColorValue acceptance
-
-Terry amended and force-pushed CleanUp several times. Its accepted replacement
-is [`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22) above `f913e54c`; `8026a7d3` remains a historical
-reference in earlier validation records. The amendments include sentinels,
-minimal internal variant operations, underlying support, value-type naming,
-tests, and user documentation. They were reviewed before the later integration.
-
-Terry rebased TermColorValue and included the regenerated changelog. The
-assistant prepared its squash without committing; Terry reviewed, committed,
-and pushed [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936). It is one commit above `9f399a23`, touching
-the header, color tests, color guide, and fork changelog. No tag or version
-bump was made. Public Site version 15 was then successfully published.
-
-The compiler fix [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a) was committed and pushed by Terry afterward.
-Local compatibility checks do not imply that the full GitHub matrix passed;
-record current CI failures separately in BuildAndTest.md.
-
-## GitHubCI acceptance and cross-machine history
-
-Terry amended integer-conversion commit `3a6c5363` to `2ac6e0bd` on the
-second machine and pushed with `--force-with-lease`. Both commits have parent
-`723a9c18` and identical `color.h` and `build.bash` blobs. This machine
-was then synchronized to `2ac6e0bd`; no source changes were lost in that
-rewrite. A lease protects an expected remote ref, not the intended content;
-inspect local refs, remote refs, and reflogs before synchronizing another
-checkout after a published amendment. Do not force-push an older history merely
-to make the second checkout's push succeed.
-
-`fix/GitHubCI` tip `022c15e4` passed its four push-triggered workflows,
-including all 19 Linux jobs, before squash preparation. Codex staged only
-`color.h` on `FmtColor`, ran the local build, all 22 CTest executables,
-documentation, and strict C++11/14/17/23 checks, and stopped before committing.
-Terry committed and pushed accepted squash `c89d6dc1` above `2ac6e0bd`.
-Its tree matches the tested candidate. All five final workflows passed, and
-issue #1 was closed at Terry's explicit request. Public Site version 16 was
-published before this coordination update. No tag, version bump, or compiler-fix
-changelog entry was added. Earlier direct-to-FmtColor fixes are historical
-exceptions; future candidate releases follow the new pre-squash CI requirement.
-
-## Coordination document maintenance
-
-When an agreed change updates both the website and coordination documents,
-publish and verify the website first. Then record its confirmed publication
-status in the coordination set. Do not claim a pending publication succeeded.
-This ordering applies to design-plan updates as well as accepted integrations;
-it does not authorize library integration or Git pushes.
-
-After review and adoption, this repository is the authoritative coordination
-set. Commit substantive decision changes, keep the documents linked, and mark
-proposals and open questions clearly. Avoid maintaining competing authoritative
-copies in project attachments. Historical copies can remain references, but
-should not override newer decisions.
-
-Read the latest available coordination documents before starting work. State
-when a required document cannot be accessed or its currency is uncertain.
-Verify source and website references rather than relying on old chat summaries
-or attachments.
-
-Preserve Terry's edits, including changes made during an editing session.
-Inspect the current file before modifying it and keep edits limited to the
-agreed scope. If the file changes while an edit is being prepared, inspect and
-preserve the new content rather than overwrite it with an older copy.
-
-Distinguish proposed wording, accepted decisions, and implemented behavior.
-Accepting one revision does not automatically adopt every draft document.
-Update affected documents when decisions change, while keeping one
-authoritative coordination set in `FmtColorGpt`.
-
-Report whether changes are local, committed, or pushed. Changes become
-available to an assistant reading GitHub only after they are pushed; identify
-pending local decisions in a cross-device handoff. Do not imply that an
-accepted or locally committed edit has already reached GitHub. Follow Terry's
-instructions for committing and obtain approval before pushing.
+When asked to update both website and coordination, publish and verify the
+website first. Then record the actual version, source, and deployment result.
+Report whether coordination edits are local, committed, or pushed; another
+machine cannot read local changes from GitHub until they are pushed.

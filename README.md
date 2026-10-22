@@ -1,197 +1,68 @@
-# FmtColorGpt
+# FmtColor coordination
 
-Working documents for FmtColor development.
+Updated October 21, 2026.
 
-The ultimate target is a color/text-style extension to the C++26 standard
-library. We plan two sequential deliverables:
+FmtColor develops color and text-style extensions for C++. We plan two
+sequential deliverables:
 
-1. A focused extension to [{fmt}](https://github.com/fmtlib/fmt), which we will
-   offer to the upstream project while preserving its compatibility machinery.
-2. A refactored color/text-style library built on standard C++26 formatting,
-   excluding {fmt}'s support for pre-C++23 compilers and its unrelated extensions.
+1. A focused extension to [{fmt}](https://github.com/fmtlib/fmt), offered
+   upstream while preserving its formatting engine and compatibility machinery.
+2. An independent styling library built on standard C++26 formatting, without
+   {fmt}'s unrelated extensions or older-compiler compatibility machinery.
 
-We develop against C++23 now. The {fmt} extension is the intermediate step;
-the standard-library refactor follows it rather than being developed in parallel.
-
-Both deliverables retain `<fmt/color.h>` and the project's styling API in the
-`fmt` namespace. Users select the implementation through their include path,
-pointing to the corresponding installation. The intent is to keep user styling
-code unchanged between deliverables. The second deliverable uses standard C++
-formatting rather than fmtlib's formatting engine or unrelated extensions.
-See [CppDesign.md](CppDesign.md) for the compatibility scope.
-
-These coordination documents apply across source branches. They are maintained
-separately from the library so they remain available when switching branches.
-They are not part of the FmtColor library deliverable.
+Development currently targets C++23. Both deliverables retain `<fmt/color.h>`
+and the styling API in namespace `fmt`; the include path selects the
+installation. Shared-source intent covers the common styling API, not arbitrary
+fmtlib-specific application code or identical binary representations.
 
 ## Documents
 
-| Document | Purpose |
+| Document                           | Purpose |
+| ---------------------------------- | ------- |
+| [Workflow.md](Workflow.md)         | Authorization, Git, integration, and release rules. |
+| [CppDesign.md](CppDesign.md)       | Implemented foundation, future design, and open decisions. |
+| [BuildAndTest.md](BuildAndTest.md) | Build commands, compatibility checks, and current validation. |
+| [Website.md](Website.md)           | Website content, publication, and maintenance. |
+
+These files belong to the separate
+[FmtColorGpt repository](https://github.com/tjgolubi/FmtColorGpt), not the library
+deliverable. They record coordination and intentions. Source and tests establish
+implemented behavior; newer explicit instructions from Terry override older
+wording. Proposals are not implementation authorization. Earlier development
+records remain available in Git history.
+
+## Current baseline
+
+The development branch is
+[`FmtColorDev`](https://github.com/tjgolubi/fmt/tree/FmtColorDev). Its chosen
+upstream baseline is
+[`0fc31633`](https://github.com/fmtlib/fmt/commit/0fc31633e7d53ac895ae0a688b83b7d44f0b0c1f).
+The fork's `main` tracks upstream; styling development belongs on `FmtColorDev`.
+
+| Commit | Purpose |
 | --- | --- |
-| [CppDesign.md](CppDesign.md) | Forward C++ design, agreed intentions, and open questions. |
-| [Workflow.md](Workflow.md) | Git policies, development practices, review, and acceptance checks. |
-| [BuildAndTest.md](BuildAndTest.md) | Platform notes, tests, and documentation builds. |
-| [Website.md](Website.md) | Sites content and its relationship to library documentation. |
+| [`0c7dad5c`](https://github.com/tjgolubi/fmt/commit/0c7dad5c53635c474761f933a4bab5508f9bfa53) | One consolidated feature commit directly above the upstream baseline: named RGB constants, style construction, comparisons, hashing, RGB averaging, documentation, tests, and tooling. |
+| [`60eed619`](https://github.com/tjgolubi/fmt/commit/60eed6190eb5fb8c8f2d79036e78442da93a57eb) | Publish the generated user guide from `FmtColorDev`, with matching edit links and instructions. |
 
-## Repositories and website
+Thus the current branch has one feature commit and one documentation-publication
+fix above its upstream baseline.  No release tag or fork version has been
+assigned. The contribution has not been merged into `fmtlib/fmt`.
 
-- [FmtColor source](https://github.com/tjgolubi/fmt/tree/FmtColor): the `FmtColor`
-  integration branch of Terry's {fmt} fork.
-- [FmtColorGpt](https://github.com/tjgolubi/FmtColorGpt): this coordination repository.
-- [Upstream {fmt}](https://github.com/fmtlib/fmt): the source baseline.
-- [FmtColor website](https://fmtcolor.ardentokapi66.chatgpt.site): design and
-  implementation explanations; public access.
-- [User documentation](https://tjgolubi.github.io/fmt/color/index.html): usage
-  examples and reference for the existing `fmt/color.h` API, published through
-  GitHub Pages from `FmtColor`.
+All five applicable workflows passed for `60eed619`: 18 Linux jobs, 13 Windows
+jobs, nine macOS jobs, one documentation job, and two guide-publication jobs.
+See [BuildAndTest.md](BuildAndTest.md#current-validation) for evidence and limits.
+GCC 16/C++26 reflection is temporarily excluded and matrix fail-fast is disabled;
+[issue #2](https://github.com/tjgolubi/fmt/issues/2) tracks restoration.
 
-## Current integration status
+## Public documentation and next work
 
-On October 18, 2026, the first project change was integrated and pushed to
-`FmtColor` as one squash commit:
-[`f303af51`](https://github.com/tjgolubi/fmt/commit/f303af515b4a5295e67333d7697dd1c797b390d0),
-adding the shared build script, git-cliff configuration, initial fork changelog,
-and Python bytecode ignore rule. Git-cliff 2.14.2 works on the PC and tablet.
-No release tag or version bump was created. See BuildAndTest.md for validation
-and its limits, and Website.md for the confirmed website publication.
-The Termux workaround was then accepted and pushed as one further squash commit,
-[`1c61e624`](https://github.com/tjgolubi/fmt/commit/1c61e624ebe67a9ca6a2f1b6465d0ac4203f1c98).
-Terry reported successful PC and Termux runs of the rebased branch. The website
-documents both accepted changes. The later color integrations and current
-remaining candidate are recorded below.
+- [Project website](https://fmtcolor.ardentokapi66.chatgpt.site): the contribution,
+  design rationale, demonstration, and future work. Current public version: 18.
+- [Generated user guide](https://tjgolubi.github.io/fmt/color/index.html): API
+  references, examples, changed-behavior notes, and named-color swatches.
+- [Issues](https://github.com/tjgolubi/fmt/issues): bugs and follow-up work.
 
-On October 19, 2026, `doc/BaseColor` was integrated and pushed as one squash
-commit, [`f913e54c`](https://github.com/tjgolubi/fmt/commit/f913e54cf41c8aafae8ce951817008e7969d4c59),
-`doc(color): document existing color and text styling APIs`. It adds Doxygen
-comments, the `/doc/color/` guide and reference pages, and GitHub Pages
-publication. The documentation describes the existing API; it does not
-implement the proposed styling extensions. The Pages build and deployment
-succeeded. Public Site version 12 added prominent links to the documentation
-from its homepage and every page's navigation. See [Website.md](Website.md)
-for publication provenance and [BuildAndTest.md](BuildAndTest.md) for validation.
-No release tag or version bump was created for this integration.
-
-## Current color integration status, October 20, 2026
-
-The accepted history on `FmtColor` is now:
-
-| Change | Accepted commit | Status |
-| --- | --- | --- |
-| Amended CleanUp | [`9f399a23`](https://github.com/tjgolubi/fmt/commit/9f399a23b11812e48ec47eb20cbfe80343788c22) | Packed colors, explicit RGB conversion and OR, emphasis-valued OR, empty getters, `no_color_t`/`no_color`, underlying support, and eight-job builds. Replaces the initially published `8026a7d3`. |
-| TermColorValue | [`81f79d53`](https://github.com/tjgolubi/fmt/commit/81f79d534e56ef24d9f08caefa1cb6dfa47c2936) | One squash above amended CleanUp; terminal indices 0–15 with unchanged emitted SGR, boundary tests, migration guide, and generated fork changelog. |
-| Clang compatibility fix | [`723a9c18`](https://github.com/tjgolubi/fmt/commit/723a9c18beebfbda98b0c8e9fbf45528a4be065a) | Direct commit by Terry to `FmtColor`; workaround for Clang 3.6 and earlier only. No changelog edit, at Terry's explicit direction. |
-| Explicit integer conversions | [`2ac6e0bd`](https://github.com/tjgolubi/fmt/commit/2ac6e0bda2d759f31c9e0e60b9463cc436578fe6) | Intentional narrow casts, typed masks, unsigned SGR arithmetic, and documentation-environment reuse; amended replacement for identical-tree `3a6c5363`. |
-| GitHubCI squash | [`c89d6dc1`](https://github.com/tjgolubi/fmt/commit/c89d6dc17044004ae86612298a244317e5d8b456) | One squash above `2ac6e0bd`, matching tested candidate `022c15e4`; all five final workflows passed. |
-
-Terry performed the final commits and pushes. During TermColorValue integration,
-the assistant prepared the squash and stopped before committing for Terry's
-review. No release tag or version bump was created. The source working tree was
-clean after the GitHubCI squash was committed and pushed.
-
-CleanUp's public additions include `fmt::underlying_type` and
-`fmt::to_underlying()`. The internal `detail::color_type` uses minimal
-variant-style classification and getters while retaining C++11 support.
-See [CppDesign.md](CppDesign.md#accepted-cleanup-baseline-october-20-2026).
-
-The local MSYS TermColorValue build, all 22 CTest executables, documentation,
-and strict C++11/14/17/23 checks passed. The Clang fix's guarded path passed
-Clang 3.6.2/C++11 on Compiler Explorer; its default path passed local GCC
-checks and color tests. These are separate from GitHub Actions results.
-
-GitHub CI runs automatically in Terry's fork on pushes. The first accepted
-TermColorValue run found the deleted-template specialization problem on
-Clang 3.6. The subsequent Linux run for `723a9c18` failed on GCC 11/C++11
-conversion warnings treated as errors; other Linux jobs, including Clang 3.6,
-were cancelled. The conversion and remaining compiler issues are now fixed
-through `c89d6dc1`. All five final workflows, including all 19 Linux jobs,
-passed. [Issue #1](https://github.com/tjgolubi/fmt/issues/1) is closed as completed. See
-[BuildAndTest.md](BuildAndTest.md#accepted-githubci-fix-and-validation-october-20-2026)
-for the historical failures and the accepted-fix validation record.
-
-ConstColor remains an unintegrated candidate at verified tip `ed21ec1f`,
-based on historical CleanUp `8026a7d3`. A rebase onto current `FmtColor`
-has not been reported. TermColorValue is no longer pending.
-
-Public Site **version 16** documents the accepted compiler fixes and passing
-CI, replaces the stale unresolved-failure note, and links closed issue #1 and
-the fork's bug tracker. Publication succeeded before this coordination update. See
-[Website.md](Website.md#current-publication) for provenance.
-
-### Release prerequisite
-
-Push the completed candidate branch and require **all applicable GitHub CI
-workflows and jobs to pass for its exact SHA before the squash-merge**.
-Changes after validation require a new push and passing CI. Codex then normally
-prepares the squash uncommitted for Terry's review; Terry commits and pushes.
-Verify final `FmtColor` CI, including documentation publication, afterward.
-See [Workflow.md](Workflow.md#candidate-ci-must-pass-before-the-squash).
-
-## Historical candidate documentation update, October 19, 2026
-
-Terry rebased both implemented candidates above accepted documentation baseline
-`f913e54c`. Documentation is now committed and pushed on each feature branch:
-
-- `feat/ConstColor`: [`4cf51e13`](https://github.com/tjgolubi/fmt/commit/4cf51e134222dd4b1692fa455fb5ffb5f6f01b5f),
-  covering namespace RGB constants, explicit packed conversions, migration,
-  and reference/swatch generation.
-- `refactor/TermColorValue`: [`7c54b595`](https://github.com/tjgolubi/fmt/commit/7c54b59558da188a390f7f1af68b5ac8e7b87902),
-  covering palette indices 0–15, SGR mappings, and compatibility guidance.
-
-GitHub confirmed both tips during the website update. Terry reported successful
-compilation, tests, and documentation generation after his final revisions.
-The assistant's narrower checks and the limits of the reported results are
-recorded in [BuildAndTest.md](BuildAndTest.md). At that time both candidates remained
-unintegrated; later acceptance is recorded above. No release tag or version
-bump was created.
-
-Public Site version 13 publishes the updated candidate explanations, commit
-links, branch-documentation links, and validation records. It preserves the
-provisional integration order and public access. See [Website.md](Website.md)
-for publication provenance and the Windows/MSYS publishing lessons.
-
-## Current development plan
-
-From current accepted `FmtColor` tip `c89d6dc1`, prioritize the remaining
-non-breaking work for the {fmt}-compatible release: `feat/Fluent`,
-then `feat/VarColor`, then `feat/Palette`. Fluent covers emphasis only; VarColor
-covers color values, constructors, and fluent color operations. Palette extends
-VarColor with cube/grayscale alternatives. Later breaking candidates are
-`feat/ConstColor` and `feat/Blend`; their relative
-order is open. `feat/ConvertColors` names the existing explicit RGB-promotion
-work using the specified Xterm palette; its integration position remains open.
-Blend combines explicit blending with strict composition for `|` and `|=`.
-`feat/StyledText` includes `absolute` and lazy nested blending after its required
-foundations; exact dependencies remain open. See
-[CppDesign.md](CppDesign.md#proposed-branches-and-integration-priorities).
-
-Branch names can describe planned work without a created branch. Create them
-when implementation starts to avoid repeated rebases. The revised eight-proposal
-plan, including ConvertColors, was published as public Site version 10 on
-October 18, 2026, before this coordination update. Website inclusion does not accept an
-implementation or authorize integration. See [Website.md](Website.md).
-
-Both deliverables allow independent bold and faint. Retain conceal and omit
-flash for {fmt}; our C++23-compatible library design replaces conceal with flash.
-
-## Status and authority
-
-**Initial working draft: October 16, 2026.** These documents consolidate the
-project discussion, the former `design.md`, and the coordination handoff. They
-need review before being adopted as the authoritative set.
-
-After review and adoption, the documents in this repository are authoritative
-for coordination and forward intentions. Chat attachments and exported copies
-may become stale. Actual source and tests establish what is implemented;
-`CppDesign.md` describes what we intend to build. A design statement does not
-mean that a feature is implemented, tested, or merged.
-
-The former `design.md` is replaced by [CppDesign.md](CppDesign.md) after adoption.
-There is no separate `CppStyle.md`: modified source follows its existing style;
-the eventual independent library follows standard C++ library style.
-
-## Maintaining these files
-
-Use Git history to track changes. Update the relevant document when a decision
-changes, distinguish proposals from agreements, and keep unresolved questions
-explicit. Link between these files with relative Markdown links so they work
-both on GitHub and in a local checkout. See [Workflow.md](Workflow.md).
+The provisional next integration order is **Fluent, VarColor, Palette**.
+ConvertColors, whole-style blending/strict composition, and StyledText remain
+proposals with open dependencies. RGB averaging is already implemented.
+See [CppDesign.md](CppDesign.md#planned-work).
