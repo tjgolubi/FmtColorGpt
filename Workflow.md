@@ -2,14 +2,14 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-Updated October 21, 2026.
+Updated October 22, 2026.
 
 ## Authorization and scope
 
 Modify project files only when Terry instructs us in the imperative mood.
 Questions and statements of intent are discussion, not edit authorization.
 Read-only inspection, CI checks, and other actions needed to answer a prompt are
-allowed. This reflects Terry's October 21 clarification of his earlier wording.
+allowed.
 
 Explain proposed changes before editing. An instruction authorizes the work
 needed within its scope; it does not authorize unrelated maintenance. Preserve
@@ -80,9 +80,8 @@ approval to implement it or include it on the website.
 
 Each accepted feature integration is one squash commit containing applicable
 source, tests, documentation, and changelog changes. Do not substitute a
-fast-forward or ordinary merge. The current consolidated feature commit and
-separate publication fix are recorded as they actually exist; this policy does
-not authorize rewriting them.
+fast-forward or ordinary merge. Accepted feature commits and publication fixes are recorded in the current
+baseline; this policy does not authorize rewriting them.
 
 ### CI gate and acceptance
 
@@ -180,6 +179,12 @@ history simply to make a rejected push succeed. Refresh website commit links
 after an authorized rewrite.
 
 ## Coordination maintenance
+
+These documents hand off context and design vision to the next task
+conversation. Maintain a coherent account of the current state, accepted
+behavior, constraints, and open decisions. Replace superseded statements;
+do not append a chronological log of commits, fixes, or conversations. Keep
+only the provenance needed to identify the current baseline and validation.
 
 Read these documents before new work and state when required material is
 unavailable or stale. Update affected decisions without maintaining competing

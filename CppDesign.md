@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-Updated October 21, 2026. Implemented behavior is separated below from future
+Updated October 22, 2026. Implemented behavior is separated below from future
 design. A proposal is not permission to implement it.
 
 ## Goals and boundaries
@@ -31,8 +31,9 @@ naming and API conventions.
 
 ## Implemented foundation
 
-The consolidated contribution is `0c7dad5c` on `FmtColorDev`; the publication
-fix is `60eed619`. Exact links and baseline are in
+The current `FmtColorDev` tip is `b5b14ed2`, which integrates Fluent on the
+`0c7dad5c` foundation and `60eed619` guide-publication configuration. Exact
+links and baseline are in
 [README.md](README.md#current-baseline). Current source and tests take
 precedence over descriptions of private implementation details here.
 
@@ -90,8 +91,8 @@ identical terminal colors. Failed composition leaves the left operand unchanged.
 Presence checks distinguish unspecified channels from black. Foreground,
 background, and emphasis getters accept empty components and return an
 unspecified color or empty emphasis. The packed-value constructor remains
-private and explicit. No fluent attribute/color API or style `blend()` is part
-of this foundation.
+private and explicit. Fluent accessors are implemented as described below.
+Whole-style `blend()` remains a proposal.
 
 RGB, internal `detail::color_type`, and `text_style` support equality, ordering,
 and `std::hash`. Ordering follows their unsigned packed values; RGB orders red,
@@ -99,6 +100,40 @@ then green, then blue, not brightness. Hashes use the same numeric values and
 are not persistent encodings. `FMT_COLOR_COMPARISONS(C)` supplies defaulted
 `operator<=>`/generated equality with a suitable C++20 library, and six ordinary
 operators otherwise. The macro is undefined after use.
+
+### Fluent component and attribute access
+
+`fg()`, `bg()`, and `emph()` are const getters returning component values.
+The color getters return the existing internal color type, preserving RGB,
+terminal, or unspecified state; there is no public `var_color` yet.
+`fg(color)` and `bg(color)` replace one channel; `no_color` clears it to
+unspecified without storing a terminal reset. `emph(attributes)` replaces
+the entire emphasis mask; `emphasis{}` clears it. Setters return
+`text_style&` and preserve unrelated components.
+
+`has_fg()`, `has_bg()`, and `has_emph()` are const boolean presence queries.
+They distinguish unspecified colors from specified RGB/terminal black and
+detect any emphasis bit. All three return false for an empty style.
+
+Each of `bold`, `faint`, `italic`, `underline`, `blink`, `reverse`, `conceal`,
+and `strikethrough` has a setter taking `bool enable = true`, returning
+`text_style&`, and an `is_*()` const boolean getter. A setter changes only
+its own bit; unset queries return false. Bold and faint are independent and
+render together without library-imposed precedence. Appearance depends on
+the terminal. Retain conceal and omit flash in {fmt}; the independent
+library replaces conceal with flash. Common styling source does not make
+those two attributes interchangeable.
+
+All accessors are `noexcept`. Getters support C++11 constant evaluation;
+mutating setters use upstream constexpr compatibility macros for C++14+
+where supported. The short names own the implementations; older getter and
+presence names remain forwarding aliases for backward compatibility. Use
+short names throughout the user guide, with one note for the older names.
+
+Fluent adds no data members and changes no existing layout, discriminators,
+packed encodings, composition, or rendering rules. Source review identified
+no ABI break; mixed-version binaries were not tested. Do not confuse this
+with the foundation's deliberate changes relative to upstream.
 
 ### Internal representation and compiler constraints
 
@@ -142,40 +177,24 @@ acceptance already received.
 
 ## Planned work
 
-The provisional additive order is **Fluent → VarColor → Palette**. Other
+Fluent is integrated. The provisional next order is **VarColor → Palette**. Other
 positions and exact dependencies remain open. Inspect existing local branches
 before reusing them; an older branch's existence or implementation does not
 establish acceptance or compatibility with the current baseline.
 
 | Proposal             | Scope |
 | -------------------- | --- |
-| `feat/Fluent`        | Emphasis-only setters and boolean getters. |
-| `feat/VarColor`      | Public color variant and fluent foreground/background replacement. |
+| `feat/VarColor`      | Public color variant and variant-based construction/access. |
 | `feat/Palette`       | Cube and grayscale alternatives extending VarColor. |
 | `feat/ConvertColors` | Explicit RGB promotion using the specified terminal palette. |
 | `feat/Blend`         | Whole-style blending and breaking strict style composition; rules open. |
 | `feat/StyledText`    | Nested styled text, absolute styles, and lazy blending. |
 
-ConstColor and RGB averaging are implemented, not pending proposals. The older
+Named RGB constants, RGB averaging, and Fluent are implemented, not pending
+proposals. The older
 bitwise-OR meaning proposed for free RGB `blend()` is superseded by averaging.
 Experimental branches such as `refactor/Crazy` are not accepted or approved for
 website inclusion merely because they exist.
-
-### Fluent
-
-Add `bold(bool enabled = true) -> text_style&` and
-`is_bold() const -> bool`, with the same pattern for all eight attributes.
-Setters mutate only their own bit, return `*this`, and preserve colors and other
-attributes. Getters return false for unset bits. Keep `noexcept` and upstream
-constexpr/older-language support. Foreground/background operations belong to
-VarColor, not Fluent.
-
-Bold and faint are independent: neither setter clears the other, and rendering
-emits both when set without library-imposed precedence. Appearance depends on
-the terminal. Retain conceal and omit flash in {fmt}; the independent library
-replaces conceal with flash. Shared-source intent covers common attributes,
-not interchangeability of those two. Blink/flash interaction remains open only
-for the independent design.
 
 ### VarColor and Palette
 
@@ -185,13 +204,20 @@ the public sentinel. Extend the existing constructors to accept the variant,
 keeping foreground required in the color-first form and avoiding ambiguity with
 default/emphasis construction. Named colors already have type `rgb`.
 
-Fluent `fg(color)`/`bg(color)` setters replace one channel and return
-`text_style&`. Const `fg()`/`bg()` getters return `var_color` by value, including
-the sentinel. Add `has_fg()`/`has_bg()` aliases. Existing getters keep their
-types and empty-component behavior. `fg(no_color)`/`bg(no_color)` clear a channel
-to unspecified, not to a stored terminal reset. Preserve the existing API and
-older-mode sentinel/clearing support without exposing `std::variant` there.
-Exact overloads and separate `clear_fg()`/`clear_bg()` conveniences remain open.
+Fluent already provides replacement, clearing, and the three short presence
+queries; do not reimplement them as pending VarColor work. VarColor proposes
+accepting the public variant in color setters and returning it by value from
+`fg()`/`bg()`, including the sentinel when unspecified. The current short
+getters return the internal color type, so changing their result type needs
+explicit source/API compatibility review. Preserve the older getter return
+types and empty-component behavior. Exact overloads, the transition strategy,
+and separate `clear_fg()`/`clear_bg()` conveniences remain open.
+
+Keep existing APIs, unspecified-color clearing, and presence queries available
+in older language modes without exposing `std::variant` there. Preserve
+RGB-OR composition, terminal conflicts, and the distinction between unspecified
+and specified black. Blink/flash interaction remains open only for the
+independent library design.
 
 Palette extends VarColor with `cube_color` for the 6×6×6 cube and `gray_color`
 for the 24-level grayscale ramp, supported by free and fluent color operations.
@@ -339,7 +365,7 @@ Plan an archive-style binary interface, initially eight little-endian bytes,
 rather than treating the current packed integer helpers as a permanent format.
 Reserved bits, invalid data, versioning, and Boost versus independent integration
 remain open. Do not implement general numeric archive machinery before needed.
-Serialization is not a prerequisite for Fluent, VarColor, or Palette.
+Serialization is not a prerequisite for VarColor or Palette.
 
 Taskwarrior persistence has not been investigated. Preserve valid application
 configuration and keep restrictions such as bright-foreground-only colors in

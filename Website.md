@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [C++ design](CppDesign.md) · [Build and test](BuildAndTest.md)
 
-Updated October 21, 2026.
+Updated October 22, 2026.
 
 ## Purpose and content
 
@@ -23,20 +23,23 @@ The current structure is:
 - [Overview](https://fmtcolor.ardentokapi66.chatgpt.site/): current features, the
   two deliverables, design, and demonstration.
 - [The contribution](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
-  consolidated feature commit `0c7dad5c`, its upstream baseline, examples,
+  the foundation and integrated Fluent API at `b5b14ed2`, the upstream baseline, examples,
   compatibility changes, and passing CI.
 - [Future work](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html):
-  Fluent, VarColor, Palette, ConvertColors, whole-style blending, and StyledText.
+  VarColor, Palette, ConvertColors, whole-style blending, and StyledText.
 
-The future additive order is Fluent, VarColor, Palette. Other order/dependencies
-remain provisional. ConstColor and RGB averaging are already implemented;
+The next provisional order is VarColor, then Palette. Other dependencies
+remain open. Named RGB constants, RGB averaging, and Fluent are implemented;
 style blending is not. Branch inclusion needs Terry's approval, not merely a
 conventional prefix or existence. Experimental/play branches such as Crazy stay
 off the public list unless explicitly approved. Approval to describe a proposal
 does not authorize implementation or acceptance.
 
-The contribution remains one feature commit above upstream `0fc31633`; current
-development also includes the separate publication fix `60eed619`. The website
+Current `FmtColorDev` is `b5b14ed2`: two feature commits and the separate
+publication fix above upstream `0fc31633`. Fluent includes component
+getters/setters, `has_fg()`/`has_bg()`/`has_emph()`, and all eight attribute
+controls. VarColor concerns the future public variant API, not the introduction
+of color replacement or short presence queries. The website
 does not claim fmtlib has merged the contribution. Check exact refs before
 changing links; source and tests establish implementation.
 
@@ -59,6 +62,14 @@ before named RGB constants and numeric representation details after ordinary
 usage. Keep emphasis discussion on its own page. Normal enum-underlying
 facilities do not need generic explanation in this guide.
 
+Keep component accessors, presence queries, attribute queries, and attribute
+setters grouped on the Text styles page. Use `fg()`, `bg()`, `emph()`,
+`has_fg()`, `has_bg()`, and `has_emph()` throughout examples and prose. Mention
+the six older accessor names only in one backward-compatibility note; omit
+their separate generated entries with the reference handler's `exclude_members`
+option. Keep Doxygen comments on public members, including compatibility
+wrappers; undocumented members are omitted by the handler.
+
 Use `!!! note "Changed behavior"` boxes for changed behavior. Describe the
 change without telling users how to fix their code. The MkDocs configuration
 enables admonitions; judge the generated HTML rather than source Markdown.
@@ -71,8 +82,9 @@ Pages source and uploads generated HTML as an artifact, not committed output.
 The ordinary `doc` workflow builds but does not publish this guide.
 See `support/fmtcolor-pages.md` and [BuildAndTest.md](BuildAndTest.md#documentation).
 
-The guide publication at `60eed619` succeeded, and the live colors page was
-checked for rendered API references and all three changed-behavior notes.
+Guide build and deployment succeeded for `b5b14ed2`. The guide includes
+the grouped Fluent API and presence queries, with older names retained in
+the compatibility note.
 The VPS remains an unused alternative host, not a second deployment completed
 by this work.
 
@@ -87,7 +99,11 @@ with a stated representative terminal palette; exact SGR bytes need not match.
 
 The sample targets the later standard-formatting deliverable using
 `std::println`, retaining `<fmt/color.h>` and namespace `fmt` through the selected
-installation. Shared-source compatibility also requires standard formatter
+installation. The sample uses current `terminal_color`, `no_color`, and
+`emphasis::reverse` names, and shows color-first, background-only,
+emphasis-only, emphasis-first, and default-plus-fluent construction. Keep
+its downloadable and displayed C++ identical. Shared-source compatibility
+also requires standard formatter
 support in the {fmt}-based implementation. Do not imply that retaining the
 header name introduces a dependency on fmtlib in the independent library.
 
@@ -161,26 +177,25 @@ and exact archive returned for the selected site.
 
 ## Current publication
 
-Verified October 21, 2026: **public Site version 18** is live at
+**Public Site version 21** is live at
 [fmtcolor.ardentokapi66.chatgpt.site](https://fmtcolor.ardentokapi66.chatgpt.site).
-It presents the consolidated contribution and links to the generated guide.
-The underlying version-17 rewrite removed the intermediate-development
-chronology; version 18 corrected all user-guide destinations.
+It describes the complete integrated Fluent API, links to `b5b14ed2` and its
+43 passing CI jobs, and points to the generated guide. VarColor and Palette
+are the next planned additions. The demo remains a future acceptance target.
 
-| Item | Verified value |
+| Item | Current value |
 | --- | --- |
 | Site project ID | `appgprj_6ad129c3e8408191b873a4e06e601c63` |
-| Source commit | `9c346eff8011e322c4d10d2272f4c485e6846d43` |
-| Saved version ID | `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_dbfc55d24d6881918c645d84937dc262` |
-| Successful deployment ID | `appgdep_6ad93fedff348191916f779f45381a93` |
-| Audience | Public; preserved across the update. |
+| Source commit | `0e05c40da50d6d49deb30f28c005b3afebfb93d5` |
+| Saved version ID | `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_65a76ae50d5081918a51301e87c8613b` |
+| Successful deployment ID | `appgdep_6ad9aa94e0e08191bbb54307b9ab96ff` |
+| Audience | Public |
 
-Validation checked all three pages, 42 local links/anchors, unique IDs, and
-whitespace. The four new current-API examples compiled in C++23. Browser checks
-inspected the rewritten pages and confirmed the published guide links. The
-demo section and both download assets were verified unchanged. These website
-checks did not rerun the library runtime suite or establish new tablet results.
+Website validation covers all three pages, 44 local links/anchors, unique
+IDs, whitespace, and six current-API C++23 example blocks. The published
+Fluent section was checked in the browser for presence queries, compatibility
+wording, and the current SHA. The demo section and both downloads are
+preserved. Website checks are not library runtime or tablet validation.
 
-Earlier publication records and superseded content remain in Git history.
 Future migration to MkDocs/Material would be a separate task, not an automatic
 consequence of maintaining this site.

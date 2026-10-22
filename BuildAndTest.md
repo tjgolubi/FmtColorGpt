@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [C++ design](CppDesign.md) · [Website](Website.md)
 
-Updated October 21, 2026. Commands run from the library checkout root unless
+Updated October 22, 2026. Commands run from the library checkout root unless
 stated otherwise. `/doc/` in project discussion means repository-relative.
 
 ## Platforms and tools
@@ -134,6 +134,10 @@ Doxygen comments in `include/fmt/color.h` supply shared API descriptions.
 Markdown in `doc/color/` supplies organization and examples. The C++ handler at
 `support/python/mkdocstrings_handlers/cxx/__init__.py` invokes Doxygen and renders
 the reference, named RGB constants, explicit conversions, and swatches.
+Public members need Doxygen comments or the handler omits their entries.
+The text-style reference uses `exclude_members` to hide the six longer
+compatibility accessors; they appear only in one backward-compatibility note.
+Check that the short getters, setters, and presence queries remain rendered.
 
 The `::: name` blocks are **MkDocs directives**, not C++ or portable GitHub
 Markdown. `!!! note "Changed behavior"` needs the configured `admonition`
@@ -177,37 +181,40 @@ and variadic RGB averaging. The pairwise RGB member and RGB OR operators do not
 have separate direct unit tests; do not claim that variadic tests cover them.
 Choose useful tests for actual risk rather than tests that mirror trivial code.
 
-For planned Fluent, cover all eight bits, enable/disable, chaining/reference
-return, independent bold/faint, empty getters, and preservation of colors.
-For VarColor, cover variant alternatives, constructors, replacement/clearing,
-specified black, presence aliases, other-channel preservation, and older-mode
-API boundaries. Palette adds alternatives, range boundaries, and mixed-kind
+Fluent regression tests in `test/color-test.cc` cover all 256 emphasis
+masks for all eight attributes, enable/disable and idempotence, reference
+returns and chaining, independent bold/faint rendering, empty getters, color
+preservation, component replacement/clearing, and constexpr/noexcept behavior.
+Presence-query tests cover each emphasis bit, unspecified colors versus RGB
+and terminal black, clearing, and agreement with compatibility names.
+
+For VarColor, extend this coverage for public variant alternatives,
+construction and accessor overloads, replacement/clearing across alternatives,
+getter return-type compatibility, and older-mode API boundaries. Palette adds alternatives, range boundaries, and mixed-kind
 composition/renderer checks.
 
 ## Current validation
 
-Verified October 21, 2026 for `FmtColorDev` commit
-[`60eed6190eb5fb8c8f2d79036e78442da93a57eb`](https://github.com/tjgolubi/fmt/commit/60eed6190eb5fb8c8f2d79036e78442da93a57eb):
+Verified October 22, 2026 for `FmtColorDev` commit
+[`b5b14ed27bdd2d968649385fc4e9ec4dc5ae6ff2`](https://github.com/tjgolubi/fmt/commit/b5b14ed27bdd2d968649385fc4e9ec4dc5ae6ff2):
 
 | Workflow | Successful jobs | Evidence |
-| ---      | --- | --- |
-| Linux    |  18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39689174510) |
-| Windows  |  13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39689174422) |
-| macOS    |   9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39689174522) |
-| Documentation build | 1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39689174480) |
-| FmtColor documentation | 2, including deployment | [Run](https://github.com/tjgolubi/fmt/actions/runs/39689174571) |
+| --- | --- | --- |
+| Linux | 18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738255) |
+| Windows | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738302) |
+| macOS | 9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738254) |
+| Documentation build | 1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738258) |
+| Guide publication | 2, including deployment | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738278) |
 
-All **43 jobs** passed. The published colors page was also checked: three
-changed-behavior note boxes, named RGB namespace documentation, and rendered
-API references were present. The publication configuration built locally before
-the push. No new library runtime tests were needed for that publication-only fix.
+All **43 jobs** passed for this exact SHA, including the amended presence
+queries and their tests. Platform workflows run the color regressions as
+part of the library suite. The generated guide is published.
 
-The consolidated feature commit `0c7dad5c` separately passed all 41 jobs in its
-four ordinary push workflows. Terry reported passing local tests for that
-combined version. Earlier assistant checks included all 22 CTest executables,
-C++11–23 syntax checks, documentation generation, and example compilation on
-the preceding candidates; do not attribute those local runs to a newer SHA.
-No fresh tablet result is established for the consolidated commit.
+Local validation of the source/tests included the focused C++23 `color-test`
+build and CTest pass on MSYS GCC 15.3.0, plus strict C++11/14/17/20/23
+compilation checks. Documentation generation and rendered-reference checks
+passed for the completed local source. These focused checks are not a fresh
+local full-suite run; no current tablet/Termux result is established.
 
 ### Coverage limits and follow-up
 
