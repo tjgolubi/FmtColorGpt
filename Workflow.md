@@ -32,6 +32,11 @@ unclean. Preserve them; mention them only when they affect the task, may be
 included accidentally, or could conflict with a branch switch. Do not include
 them in commits or stashes automatically.
 
+Require C++11 compatibility for the entire {fmt}-based release, including all
+tests added since `main`. Preserve the older {fmt} tests; do not rename their
+identifiers as part of this work. Compatibility notes and dedicated regression
+checks may use the former names. Preserve historical changelog terminology.
+
 Keep edits minimal and follow the existing source style. Avoid unrelated
 cleanup, declaration changes, or broad toolchain changes. Preserve each existing
 file's line endings; create new text files with LF. Git uses

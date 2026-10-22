@@ -12,10 +12,12 @@ and textual/binary style serialization. User themes and future Taskwarrior
 integration motivate the design; application-specific restrictions belong in
 applications.
 
-The two sequential deliverables are described in [README.md](README.md): first
-extend {fmt}, then refactor the styling library onto standard C++26 formatting.
-Development currently targets C++23. The second deliverable excludes {fmt}'s
-formatting engine, unrelated extensions, and pre-C++23 compatibility machinery.
+The two sequential deliverables are described in [README.md](README.md). The
+first release extends {fmt} and must support C++11, including the public color
+variant API. C++23 is the current development mode, not its minimum requirement.
+The later independent release requires C++23 and uses standard formatting and
+`std::variant`. It excludes {fmt}'s formatting engine, unrelated extensions, and
+pre-C++23 compatibility machinery.
 
 Both retain `<fmt/color.h>` and the styling API in namespace `fmt`; users select
 the installation through their include path. Shared-source intent covers common
@@ -31,11 +33,23 @@ naming and API conventions.
 
 ## Implemented foundation
 
-The current `FmtColorDev` tip is `b5b14ed2`, which integrates Fluent on the
-`0c7dad5c` foundation and `60eed619` guide-publication configuration. Exact
+The current `FmtColorDev` tip is `8e8b8132`, which integrates ShortNames on
+Fluent (`b5b14ed2`), the `0c7dad5c` foundation, and the `60eed619`
+guide-publication configuration. Exact
 links and baseline are in
 [README.md](README.md#current-baseline). Current source and tests take
 precedence over descriptions of private implementation details here.
+
+Use `term_color`, `emphasis::strike`, `text_style::strike()`, and
+`text_style::is_strike()` in new documentation, examples, and tests.
+The former names `terminal_color`, `emphasis::strikethrough`,
+`strikethrough()`, and `is_strikethrough()` remain for source compatibility;
+use them only when documenting or testing that compatibility. The enum alias
+denotes the same type; both emphasis names select bit 7, and the old methods
+forward to the new methods with the same default argument, reference return,
+`noexcept`, and constant-evaluation behavior. This rename preserves source
+spellings and rendering; the foundation has already crossed the ABI-compatibility
+boundary, so it is not an ABI-preservation requirement for ShortNames.
 
 ### Colors and numeric representations
 
@@ -54,7 +68,7 @@ precedence over descriptions of private implementation details here.
   single variadic average. Named constants can be passed directly.
 - `no_color_t` and `no_color` denote unspecified color, distinct from RGB black
   and terminal black. They do not represent a terminal-reset instruction.
-- `terminal_color` uses indices 0–15. Rendering maps normal indices 0–7 to
+- `term_color` uses indices 0–15. Rendering maps normal indices 0–7 to
   foreground/background SGR 30–37/40–47 and bright indices 8–15 to
   90–97/100–107. A zero-valued black remains specified via its discriminator.
 
@@ -116,7 +130,7 @@ They distinguish unspecified colors from specified RGB/terminal black and
 detect any emphasis bit. All three return false for an empty style.
 
 Each of `bold`, `faint`, `italic`, `underline`, `blink`, `reverse`, `conceal`,
-and `strikethrough` has a setter taking `bool enable = true`, returning
+and `strike` has a setter taking `bool enable = true`, returning
 `text_style&`, and an `is_*()` const boolean getter. A setter changes only
 its own bit; unset queries return false. Bold and faint are independent and
 render together without library-imposed precedence. Appearance depends on
@@ -177,7 +191,9 @@ acceptance already received.
 
 ## Planned work
 
-Fluent is integrated. The provisional next order is **VarColor → Palette**. Other
+Fluent and ShortNames are integrated. The provisional next order is
+**VarColor → Palette**. `feat/VarColor` is active in a separate chat and remains
+outside the accepted `FmtColorDev` baseline. Other
 positions and exact dependencies remain open. Inspect existing local branches
 before reusing them; an older branch's existence or implementation does not
 establish acceptance or compatibility with the current baseline.
@@ -198,9 +214,12 @@ website inclusion merely because they exist.
 
 ### VarColor and Palette
 
-For C++17+, plan `using var_color = std::variant<no_color_t, terminal_color, rgb>`.
-The default alternative is unspecified; do not substitute `std::monostate` for
-the public sentinel. Extend the existing constructors to accept the variant,
+The first {fmt}-compatible release must provide a C++11-compatible public color
+variant without requiring `std::variant`. The later independent C++23 release
+will use `std::variant`, with the planned alias
+`using var_color = std::variant<no_color_t, rgb, detail::rsvd_color, term_color>`.
+The default alternative is unspecified; retain `no_color_t` as the public
+sentinel.  Extend the existing constructors to accept the variant,
 keeping foreground required in the color-first form and avoiding ambiguity with
 default/emphasis construction. Named colors already have type `rgb`.
 
@@ -213,8 +232,9 @@ explicit source/API compatibility review. Preserve the older getter return
 types and empty-component behavior. Exact overloads, the transition strategy,
 and separate `clear_fg()`/`clear_bg()` conveniences remain open.
 
-Keep existing APIs, unspecified-color clearing, and presence queries available
-in older language modes without exposing `std::variant` there. Preserve
+Keep the public color variant, existing APIs, unspecified-color clearing, and
+presence queries available in C++11 for the first release. Reserve the
+`std::variant` implementation for the later C++23 release. Preserve
 RGB-OR composition, terminal conflicts, and the distinction between unspecified
 and specified black. Blink/flash interaction remains open only for the
 independent library design.

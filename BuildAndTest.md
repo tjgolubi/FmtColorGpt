@@ -8,7 +8,8 @@ stated otherwise. `/doc/` in project discussion means repository-relative.
 ## Platforms and tools
 
 Primary development platforms are Windows/MSYS2 and Android/Termux; GitHub CI
-adds Linux, Windows, and macOS coverage. New work targets C++23 while retaining
+
+
 {fmt}'s supported older-language paths. C++26 is a future target, not a current
 local-build prerequisite.
 
@@ -136,8 +137,10 @@ Markdown in `doc/color/` supplies organization and examples. The C++ handler at
 the reference, named RGB constants, explicit conversions, and swatches.
 Public members need Doxygen comments or the handler omits their entries.
 The text-style reference uses `exclude_members` to hide the six longer
-compatibility accessors; they appear only in one backward-compatibility note.
-Check that the short getters, setters, and presence queries remain rendered.
+component/presence accessors and the two former strike methods. Compatibility
+notes describe the retained names. Check that `term_color`, `strike()`,
+`is_strike()`, and the short getters, setters, and presence queries remain
+rendered. The emphasis reference retains the documented enum alias.
 
 The `::: name` blocks are **MkDocs directives**, not C++ or portable GitHub
 Markdown. `!!! note "Changed behavior"` needs the configured `admonition`
@@ -188,6 +191,12 @@ preservation, component replacement/clearing, and constexpr/noexcept behavior.
 Presence-query tests cover each emphasis bit, unspecified colors versus RGB
 and terminal black, clearing, and agreement with compatibility names.
 
+ShortNames regression coverage includes alias type identity, all 16 terminal
+colors through both spellings, mixed old/new setters and queries, state
+preservation, constant evaluation, and ANSI output. The fluent regression
+helper exercises `strike()` across all 256 emphasis masks. Tests added since
+`main` use the shorter names; the older {fmt} tests retain their original names.
+
 For VarColor, extend this coverage for public variant alternatives,
 construction and accessor overloads, replacement/clearing across alternatives,
 getter return-type compatibility, and older-mode API boundaries. Palette adds alternatives, range boundaries, and mixed-kind
@@ -196,25 +205,32 @@ composition/renderer checks.
 ## Current validation
 
 Verified October 22, 2026 for `FmtColorDev` commit
-[`b5b14ed27bdd2d968649385fc4e9ec4dc5ae6ff2`](https://github.com/tjgolubi/fmt/commit/b5b14ed27bdd2d968649385fc4e9ec4dc5ae6ff2):
+[`8e8b8132191068db7c1e2d95221aba54c05768a6`](https://github.com/tjgolubi/fmt/commit/8e8b8132191068db7c1e2d95221aba54c05768a6):
 
 | Workflow | Successful jobs | Evidence |
 | --- | --- | --- |
-| Linux | 18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738255) |
-| Windows | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738302) |
-| macOS | 9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738254) |
-| Documentation build | 1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738258) |
-| Guide publication | 2, including deployment | [Run](https://github.com/tjgolubi/fmt/actions/runs/39731738278) |
+| Linux | 18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236259) |
+| Windows | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236362) |
+| macOS | 9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236279) |
+| Documentation build | 1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236507) |
+| Guide publication | 2, including deployment | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236270) |
 
-All **43 jobs** passed for this exact SHA, including the amended presence
-queries and their tests. Platform workflows run the color regressions as
-part of the library suite. The generated guide is published.
+All **43 jobs** passed for this exact SHA, including ShortNames and its
+compatibility tests. The GitHub runs and every job were independently checked,
+with no queued, failed, cancelled, or skipped jobs. Platform workflows run the
+color regressions as part of the library suite. The generated guide is published.
 
-Local validation of the source/tests included the focused C++23 `color-test`
-build and CTest pass on MSYS GCC 15.3.0, plus strict C++11/14/17/20/23
-compilation checks. Documentation generation and rendered-reference checks
-passed for the completed local source. These focused checks are not a fresh
-local full-suite run; no current tablet/Termux result is established.
+Local validation included the focused Release/C++23 `color-test` build and
+CTest pass using the existing MSYS GCC 15.3.0 configuration. Documentation
+generation and generated-HTML checks passed for `term_color`, `strike()`,
+`is_strike()`, and rendered compatibility notes. The staged squash tree was
+verified identical to candidate `606dd22c`; the integration commit has the same
+tree (`3a15ffb664bda2b870fdbeb6b51fb7e24b25ad4a`). Focused CTest also passed
+after squash preparation.
+
+These checks do not establish a fresh local full-suite run or fresh local
+C++11/14/17/20 compilation checks for ShortNames. The passing CI matrix supplies
+older-mode/compiler coverage. No current tablet/Termux result is established.
 
 ### Coverage limits and follow-up
 
