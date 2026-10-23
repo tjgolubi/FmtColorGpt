@@ -2,14 +2,13 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [C++ design](CppDesign.md) · [Website](Website.md)
 
-Updated October 22, 2026. Commands run from the library checkout root unless
+Updated October 23, 2026. Commands run from the library checkout root unless
 stated otherwise. `/doc/` in project discussion means repository-relative.
 
 ## Platforms and tools
 
 Primary development platforms are Windows/MSYS2 and Android/Termux; GitHub CI
-
-
+adds Linux, Windows, and macOS coverage. New work targets C++23 while retaining
 {fmt}'s supported older-language paths. C++26 is a future target, not a current
 local-build prerequisite.
 
@@ -197,40 +196,49 @@ preservation, constant evaluation, and ANSI output. The fluent regression
 helper exercises `strike()` across all 256 emphasis masks. Tests added since
 `main` use the shorter names; the older {fmt} tests retain their original names.
 
-For VarColor, extend this coverage for public variant alternatives,
-construction and accessor overloads, replacement/clearing across alternatives,
-getter return-type compatibility, and older-mode API boundaries. Palette adds alternatives, range boundaries, and mixed-kind
-composition/renderer checks.
+VarColor regression tests cover empty sentinel traits and numeric helpers,
+construction, all four reference categories of type/index access, pointer
+identity, null and wrong-kind access, cross-alternative assignment and
+self-assignment, public reserved-type visitor overloads, forwarded visitors,
+mutation, reference/void results, exceptions, constant evaluation, and independent
+style getter values. Compiler-specific test workarounds are gated to old GCC
+and native MSVC; see [CppDesign.md](CppDesign.md#compiler-constraints).
+Palette will need range-boundary, new-alternative, and mixed-kind
+composition/renderer coverage.
 
 ## Current validation
 
-Verified October 22, 2026 for `FmtColorDev` commit
-[`8e8b8132191068db7c1e2d95221aba54c05768a6`](https://github.com/tjgolubi/fmt/commit/8e8b8132191068db7c1e2d95221aba54c05768a6):
+Verified October 23, 2026 for `FmtColorDev` commit
+[`1aaba9b5945dbf269a6a6b3f199e8f77e793be4f`](https://github.com/tjgolubi/fmt/commit/1aaba9b5945dbf269a6a6b3f199e8f77e793be4f):
 
 | Workflow | Successful jobs | Evidence |
 | --- | --- | --- |
-| Linux | 18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236259) |
-| Windows | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236362) |
-| macOS | 9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236279) |
-| Documentation build | 1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236507) |
-| Guide publication | 2, including deployment | [Run](https://github.com/tjgolubi/fmt/actions/runs/39857236270) |
+| Linux | 18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520987) |
+| Windows | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520980) |
+| macOS | 9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520976) |
+| Documentation build | 1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520981) |
+| Guide publication | 2, including deployment | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520990) |
 
-All **43 jobs** passed for this exact SHA, including ShortNames and its
-compatibility tests. The GitHub runs and every job were independently checked,
-with no queued, failed, cancelled, or skipped jobs. Platform workflows run the
-color regressions as part of the library suite. The generated guide is published.
+All **43 jobs** passed for this exact final amended SHA, including VarColor,
+public `fmt::rsvd_color`, and the generated changelog. Local and GitHub SHAs
+matched. The runs and every job were independently checked, with no queued,
+failed, cancelled, or skipped jobs in the final successful results. Windows
+needed a rerun after an MSYS2 mirror download timed out during setup; the
+successful final attempt includes both MinGW jobs. The guide is published.
 
-Local validation included the focused Release/C++23 `color-test` build and
-CTest pass using the existing MSYS GCC 15.3.0 configuration. Documentation
-generation and generated-HTML checks passed for `term_color`, `strike()`,
-`is_strike()`, and rendered compatibility notes. The staged squash tree was
-verified identical to candidate `606dd22c`; the integration commit has the same
-tree (`3a15ffb664bda2b870fdbeb6b51fb7e24b25ad4a`). Focused CTest also passed
-after squash preparation.
+Local validation of the final public reserved-type change included strict
+C++11/C++23 header and test-source compilation, the focused Release/C++23
+`color-test` build and CTest pass, and the GitHub Pages documentation build.
+Earlier VarColor checks covered C++11/14/17/20/23 compilation and a C++11 color
+test executable; those do not replace exact-final-SHA CI. This is not a claim
+of a fresh local full-suite or tablet/Termux run. The CI matrix supplies old
+compiler and broader platform coverage.
 
-These checks do not establish a fresh local full-suite run or fresh local
-C++11/14/17/20 compilation checks for ShortNames. The passing CI matrix supplies
-older-mode/compiler coverage. No current tablet/Termux result is established.
+Website version 23 was separately validated on all three pages: 45 local
+links/anchors, unique IDs, unchanged demo downloads and agreement with the
+displayed C++, and two new VarColor examples compiled in C++11 and C++23.
+Browser inspection and native Sites publication succeeded. Website checks do
+not establish library runtime coverage; see [Website.md](Website.md#current-publication).
 
 ### Coverage limits and follow-up
 

@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [C++ design](CppDesign.md) · [Build and test](BuildAndTest.md)
 
-Updated October 22, 2026.
+Updated October 23, 2026.
 
 ## Purpose and content
 
@@ -23,25 +23,26 @@ The current structure is:
 - [Overview](https://fmtcolor.ardentokapi66.chatgpt.site/): current features, the
   two deliverables, design, and demonstration.
 - [The contribution](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
-  the foundation, Fluent API, and ShortNames at `8e8b8132`, the upstream baseline, examples,
-  compatibility changes, and passing CI.
+  the foundation, Fluent, ShortNames, and VarColor at `1aaba9b5`, with the
+  upstream baseline, examples, compatibility changes, and passing CI.
 - [Future work](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html):
-  VarColor, Palette, ConvertColors, whole-style blending, and StyledText.
+  Palette, ConvertColors, whole-style blending, and StyledText, with links back
+  to integrated features.
 
-The next provisional order is VarColor, then Palette. Other dependencies
+VarColor is integrated; Palette is the next planned addition. Other dependencies
 remain open. Named RGB constants, RGB averaging, and Fluent are implemented;
 style blending is not. Branch inclusion needs Terry's approval, not merely a
 conventional prefix or existence. Experimental/play branches such as Crazy stay
 off the public list unless explicitly approved. Approval to describe a proposal
 does not authorize implementation or acceptance.
 
-Current `FmtColorDev` is `8e8b8132`: three feature commits and the separate
-publication fix above upstream `0fc31633`. Fluent includes component
-getters/setters, `has_fg()`/`has_bg()`/`has_emph()`, and all eight attribute
-controls. ShortNames adds `term_color`, `emphasis::strike`, `strike()`, and
-`is_strike()` with source-compatible old names. VarColor concerns the future public variant API, not the introduction
-of color replacement or short presence queries. The website
-does not claim fmtlib has merged the contribution. Check exact refs before
+Current `FmtColorDev` is `1aaba9b5`: four feature commits and the separate
+publication fix above upstream `0fc31633`. Fluent supplies component access,
+presence queries, and all eight attribute controls. ShortNames supplies
+`term_color`, `emphasis::strike`, `strike()`, and `is_strike()` with compatible
+older names. VarColor supplies public `color_t` and `rsvd_color`, type/index
+access, and single-color visitation throughout C++11 and later. All 43 CI jobs
+passed for the final amended commit. The website does not claim fmtlib has merged the contribution. Check exact refs before
 changing links; source and tests establish implementation.
 
 ## User guide
@@ -86,9 +87,9 @@ Pages source and uploads generated HTML as an artifact, not committed output.
 The ordinary `doc` workflow builds but does not publish this guide.
 See `support/fmtcolor-pages.md` and [BuildAndTest.md](BuildAndTest.md#documentation).
 
-Guide build and deployment succeeded for `8e8b8132`. The guide includes
-the grouped Fluent API, presence queries, and shorter color/emphasis names,
-with compatibility notes for retained older names.
+Guide build and deployment succeeded for `1aaba9b5`. The guide includes
+public color variants, access and visitation, the grouped Fluent API, presence
+queries, and shorter names, with compatibility and reference-lifetime notes.
 The VPS remains an unused alternative host, not a second deployment completed
 by this work.
 
@@ -182,37 +183,35 @@ and exact archive returned for the selected site.
 
 ## Current publication
 
-**Public Site version 22** is live at
+**Public Site version 23** is live at
 [fmtcolor.ardentokapi66.chatgpt.site](https://fmtcolor.ardentokapi66.chatgpt.site).
-It describes the integrated foundation, Fluent API, and shorter names, links
-to `8e8b8132` and its 43 passing CI jobs, and points to the generated guide.
-Examples throughout the site and the downloadable demo use the new names;
-former names appear only in the backward-compatibility explanation. VarColor
-and Palette remain outside the integrated baseline. The demo remains a future
-acceptance target.
+It describes the integrated foundation, Fluent, ShortNames, and VarColor, links
+to `1aaba9b5` and its 43 passing CI jobs, and points to the generated guide.
+The contribution page explains public `color_t`, reference/pointer access,
+visitation with `fmt::rsvd_color`, representation and compatibility changes,
+and C++11 support. The overview and future-work plan reflect VarColor's
+integration; Palette remains next. The demo remains a future acceptance target.
+
+The complete {fmt}-compatible release requires C++11 and uses the custom union
+implementation in every supported mode. The later independent release requires
+C++23 and will use `std::variant`. The former C++17-gated variant proposal and
+stale C++26 minimum on the overview have been replaced.
 
 | Item | Current value |
 | --- | --- |
 | Site project ID | `appgprj_6ad129c3e8408191b873a4e06e601c63` |
-| Source commit | `0afa422dcd8e6632bf732bb3f711d6fd51b3aec0` |
-| Saved version ID | `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_af9a77cf39bc8191b0c7418d83bf22e6` |
-| Successful deployment ID | `appgdep_6ada82bf153c81918f9f98929a45ca5e` |
+| Source commit | `2db5c892afa9d02953a4c3673e1f67af8269b9dd` |
+| Saved version ID | `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_cef55e81f920819189c9ad64c117ae80` |
+| Successful deployment ID | `appgdep_6adaf11f694c8191b641df3e592ff2d0` |
 | Audience | Public |
 
-Website validation covers all three pages, 44 local links/anchors, unique
-IDs, whitespace, naming, current source/CI links, and agreement between the
-displayed and downloadable demo. The new section was inspected locally and on
-the live site in the browser, including its shorter-name example, compatibility
-wording, and current SHA. Native deployment returned `succeeded`. The demo
-section, styled output, and both downloads are preserved. This publication did
-not recompile the website example blocks; website checks are not library
-runtime or tablet validation.
-
-Known content drift: the future-work page still describes C++17-gated
-`std::variant` APIs. The newer C++11-compatible public variant requirement for
-the {fmt} deliverable in [CppDesign.md](CppDesign.md#varcolor-and-palette) is
-authoritative. Version 22 updated the names there without changing that design
-text; correct it in the next authorized VarColor website update.
+Validation covered all three pages, 45 local links/anchors, unique IDs,
+whitespace, current source/CI links, and agreement between the displayed and
+downloadable demo. Both new VarColor example blocks compiled in C++11 and
+C++23. The contribution and future-work pages were inspected in the local
+browser preview; the live contribution was checked after native deployment
+returned `succeeded`. Demo content, styled output, and both downloads are
+preserved. Website checks are not library runtime or tablet validation.
 
 Future migration to MkDocs/Material would be a separate task, not an automatic
 consequence of maintaining this site.

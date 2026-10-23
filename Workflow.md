@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [C++ design](CppDesign.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-Updated October 22, 2026.
+Updated October 23, 2026.
 
 ## Authorization and scope
 
@@ -93,8 +93,8 @@ baseline; this policy does not authorize rewriting them.
 1. Confirm scope, baseline, dependencies, and preservation of local work.
 2. Review the complete candidate. Assess source/API, binary/ABI, and stored-data
    compatibility separately. Unchanged size does not prove ABI compatibility.
-3. Finish applicable source, tests, user documentation, and changelog. Run the
-   relevant local checks and prepare the proposed squash message.
+3. Finish applicable source, tests, and user documentation. Run the relevant
+   local checks.
 4. Terry pushes the candidate, or explicitly authorizes the assistant to push.
    Verify local and GitHub full SHAs match. **Every applicable workflow and
    matrix job must pass for that exact SHA before squash preparation.** Queued,
@@ -102,10 +102,18 @@ baseline; this policy does not authorize rewriting them.
 5. Obtain authorization for the squash onto the agreed development baseline.
    Prepare it, verify the resulting tree and relevant integration checks, and
    stop uncommitted for Terry's review unless instructed otherwise.
-6. Terry normally commits and pushes. Verify the intended commit structure and
-   all applicable CI for the resulting SHA, including documentation publication
-   on `FmtColorDev`. Candidate results do not replace final integration checks.
-7. Publish an authorized website update before recording its confirmed
+6. Terry commits the squash. Run git-cliff over the accepted history, starting
+   at `main` and ending at that actual commit, inspect the generated changelog,
+   and leave it for review.  Terry stages it and uses
+   `git commit --amend --no-edit` to include it in the same squash commit.
+   If the message needs editing, amend it first, regenerate the changelog, then
+   amend again with the generated file.
+7. Terry pushes the final amended commit, or explicitly authorizes the assistant
+   to push. Verify the intended commit structure, matching local/GitHub full
+   SHAs, and every applicable CI job for that final SHA, including guide
+   publication on `FmtColorDev`. Candidate results do not replace final
+   integration checks.
+8. Publish an authorized website update before recording its confirmed
    publication in coordination documents. Update or close an issue only when
    instructed; a successful fix does not by itself authorize closure.
 
@@ -132,19 +140,31 @@ Keep entries concise; detailed rationale belongs on the website. Coordination
 revisions are not library release entries. Preserve explicit decisions to omit
 an entry for a particular fix rather than adding one later without instruction.
 
-Use git-cliff **2.14.2** and an explicit accepted-history range after the chosen
-upstream baseline. Exclude upstream history and intermediate feature commits.
-For the current baseline, a preview is:
+Use git-cliff **2.14.2** and an explicit accepted-history range after the
+upstream branch-off point. Exclude upstream history and intermediate feature commits.
+After Terry commits the squash on `FmtColorDev`, generate the changelog with:
 
 ```bash
-git cliff --config cliff.toml --offline --no-exec \
-  0fc31633e7d53ac895ae0a688b83b7d44f0b0c1f..FmtColorDev
+git-cliff --offline --no-exec --output FmtColorChangeLog.md main..HEAD
 ```
 
-Before the final squash, preview its message with `--with-commit` so the entry
-can be included in that commit. Inspect output before replacing the changelog.
-`cliff.toml`'s baseline comment may lag the current branch; verify the range.
-Do not invent a prospective hash or blindly regenerate unrelated entries.
+The baseline is excluded. `main..HEAD` is a convenient equivalent only while
+`main` still points to that exact upstream baseline. `cliff.toml` is discovered
+automatically; its baseline comment can lag the current branch, so verify the
+range. `--offline` prevents network metadata requests and `--no-exec` disables
+external processing commands. Use the generated file, review its diff, and let
+Terry stage and amend it into the squash before pushing. Do not manually rewrite
+entries: adjust the template or relevant commit message when needed, then
+regenerate. Do not include intermediate feature commits or invent a prospective
+hash. This commit/generate/amend/push sequence was verified with VarColor.
+
+The current template groups entries by commit type and orders them oldest first
+within each group. It uses the subject, scope, breaking marker, and
+`BREAKING CHANGE:` description; it does not reproduce the ordinary commit body
+or summarize it automatically. Use Markdown backticks around identifiers in
+commit messages so generated entries retain code formatting. Keep subjects and
+breaking-change descriptions readable. Changing an already published message
+rewrites history and requires separate authorization and coordination.
 
 Keep bookkeeping exclusions before general parsers, protect breaking commits,
 retain deterministic groups, and fail on unexpected nonconventional commits.

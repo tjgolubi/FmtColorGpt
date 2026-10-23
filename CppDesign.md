@@ -2,7 +2,7 @@
 
 [Document map](README.md) · [Workflow](Workflow.md) · [Build and test](BuildAndTest.md) · [Website](Website.md)
 
-Updated October 22, 2026. Implemented behavior is separated below from future
+Updated October 23, 2026. Implemented behavior is separated below from future
 design. A proposal is not permission to implement it.
 
 ## Goals and boundaries
@@ -33,9 +33,9 @@ naming and API conventions.
 
 ## Implemented foundation
 
-The current `FmtColorDev` tip is `8e8b8132`, which integrates ShortNames on
-Fluent (`b5b14ed2`), the `0c7dad5c` foundation, and the `60eed619`
-guide-publication configuration. Exact
+The current `FmtColorDev` tip is `1aaba9b5`, which integrates VarColor on
+ShortNames (`8e8b8132`), Fluent (`b5b14ed2`), the `0c7dad5c` foundation, and
+the `60eed619` guide-publication configuration. Exact
 links and baseline are in
 [README.md](README.md#current-baseline). Current source and tests take
 precedence over descriptions of private implementation details here.
@@ -73,8 +73,8 @@ boundary, so it is not an ABI-preservation requirement for ShortNames.
   90–97/100–107. A zero-valued black remains specified via its discriminator.
 
 `underlying_type<T>::type` and `to_underlying(value)` expose numeric values:
-`uint8_t` for terminal colors/emphasis, `uint32_t` for RGB/internal color values,
-and `uint64_t` for text styles. These are not stable serialization contracts.
+`uint8_t` for terminal colors/emphasis, `uint32_t` for RGB/`color_t` values,
+`unsigned` for the empty color sentinels (value zero), and `uint64_t` for text styles. These are not stable serialization contracts.
 `to_underlying(text_style)` is a non-template friend overload, not an explicit
 integral conversion operator. `narrow_cast` is an unchecked intentional cast;
 it does not validate ranges. `enum_cast` expresses enum-related casts.
@@ -85,10 +85,10 @@ The public constructors are non-explicit:
 
 ```cpp
 text_style(emphasis emp = emphasis{},
-           detail::color_type fg = no_color,
-           detail::color_type bg = no_color) noexcept;
-text_style(detail::color_type fg,
-           detail::color_type bg = no_color,
+           color_t fg = no_color,
+           color_t bg = no_color) noexcept;
+text_style(color_t fg,
+           color_t bg = no_color,
            emphasis emp = emphasis{}) noexcept;
 ```
 
@@ -108,18 +108,20 @@ unspecified color or empty emphasis. The packed-value constructor remains
 private and explicit. Fluent accessors are implemented as described below.
 Whole-style `blend()` remains a proposal.
 
-RGB, internal `detail::color_type`, and `text_style` support equality, ordering,
+RGB, public `color_t`, and `text_style` support equality, ordering,
 and `std::hash`. Ordering follows their unsigned packed values; RGB orders red,
 then green, then blue, not brightness. Hashes use the same numeric values and
 are not persistent encodings. `FMT_COLOR_COMPARISONS(C)` supplies defaulted
 `operator<=>`/generated equality with a suitable C++20 library, and six ordinary
-operators otherwise. The macro is undefined after use.
+operators otherwise. `color_t` supplies explicit packed-value comparisons
+because a union cannot use memberwise defaulted comparisons. The macro is
+undefined after use.
 
 ### Fluent component and attribute access
 
 `fg()`, `bg()`, and `emph()` are const getters returning component values.
-The color getters return the existing internal color type, preserving RGB,
-terminal, or unspecified state; there is no public `var_color` yet.
+The color getters return public `color_t` by value, preserving RGB, terminal,
+or unspecified state. Each returned color is independent of the style.
 `fg(color)` and `bg(color)` replace one channel; `no_color` clears it to
 unspecified without storing a terminal reset. `emph(attributes)` replaces
 the entire emphasis mask; `emphasis{}` clears it. Setters return
@@ -149,14 +151,44 @@ packed encodings, composition, or rendering rules. Source review identified
 no ABI break; mixed-version binaries were not tested. Do not confuse this
 with the foundation's deliberate changes relative to upstream.
 
-### Internal representation and compiler constraints
+### Public color variants and internal representation
 
-The internal color class provides only the needed variant-like classification
-and checked `get<T>` operations. It is not the proposed public `var_color` API.
-Its discriminator values are `00` unspecified, `01` RGB, `10` reserved, and
-`11` terminal. Composition's addition/overflow check depends on `10` remaining
-unused. A future palette feature must review those invariants together with
-classification, getters, presence checks, and rendering.
+`fmt::color_t` is a public discriminator-and-union value in every supported
+language mode, including C++11. The alternatives are `no_color_t`, `rgb`,
+`rsvd_color`, and `term_color`; `color_t::kind` names their indices `none`,
+`rgb`, `rsvd`, and `term` (0, 1, 2, and 3). Default construction is unspecified.
+Construction and assignment from the alternatives are implicit and `noexcept`;
+copying or moving preserves the active kind and value.
+
+`rsvd_color` is public in `fmt` because visitors must accept every alternative.
+Its private user-provided constructor prevents construction, including C++11
+aggregate initialization. No valid color activates it. Both empty sentinels
+have `underlying_type`/`to_underlying` support for generic numeric dispatch.
+
+Type- and index-based `get` preserve all four const/reference categories and
+report `format_error` for a wrong kind. `get_if` returns a pointer or `nullptr`
+for a mismatch or null input; `holds_alternative` classifies by type. `visit`
+supports one color, forwards the visitor and color category, and requires the
+same result type for all four alternatives, including the reserved one. Value,
+reference, and `void` results work; visitor exceptions propagate.
+
+References and pointers must not outlive their owning color or an alternative
+change. Copy an alternative extracted directly from a temporary style getter.
+Const access/classification support C++11 constant evaluation; mutable access
+and assignment support C++14+ where the compiler permits it.
+
+`to_underlying(color_t)` produces the packed numeric value;
+`detail::unpack_color` is internal. The public type, API signatures, and
+reference-returning access are compatibility changes.
+
+VarColor preserves packed `text_style` storage, RGB-OR composition, terminal
+conflicts, comparisons, hashing, and ANSI rendering. The packed discriminator
+values are `00` unspecified, `01` RGB, `10` reserved, and `11` terminal.
+Composition's addition/overflow check depends on `10` remaining unused. Palette
+must review those invariants with classification, access, and rendering. This
+preservation does not establish a stable ABI or serialization format.
+
+### Compiler constraints
 
 ANSI generation uses append helpers and an emphasis-to-SGR table. RGB parameters
 retain three-digit padding. Packed colors/styles have changed from upstream;
@@ -164,8 +196,15 @@ object size alone cannot establish ABI or persisted-data compatibility.
 
 Preserve these targeted compiler provisions:
 
-- Only Clang 3.6 and earlier use a dependent assertion instead of a deleted
-  primary `get<T>` template, avoiding its specialization bug.
+- Initialize union alternatives with parentheses: older GCC/Clang reject
+  braced copying of the empty alternative. Keep the user-provided empty default
+  `color_t` constructor; the defaulted form failed on an older compiler.
+- Keep test workarounds restricted to affected compilers: GCC before 5 lacks
+  the tested trivial-copy trait and needs static constexpr objects for the
+  constexpr pointer checks. Native MSVC 19.29 through 19.44 uses a const-reference
+  empty-sentinel visitor overload to avoid its constexpr empty-union copy bug.
+  Outside those gates, tests retain the original by-value visitor and
+  automatic objects.
 - Defaulted comparisons locally suppress Clang's spurious
   `-Wzero-as-null-pointer-constant` warning; surrounding code retains the warning.
 - Fallback comparisons call `to_underlying` **unqualified**, so argument-dependent
@@ -191,16 +230,14 @@ acceptance already received.
 
 ## Planned work
 
-Fluent and ShortNames are integrated. The provisional next order is
-**VarColor → Palette**. `feat/VarColor` is active in a separate chat and remains
-outside the accepted `FmtColorDev` baseline. Other
-positions and exact dependencies remain open. Inspect existing local branches
-before reusing them; an older branch's existence or implementation does not
-establish acceptance or compatibility with the current baseline.
+Fluent, ShortNames, and VarColor are integrated. **Palette** is the next
+planned integration. Other positions and exact dependencies remain open.
+Inspect existing local branches before reusing them; an older branch's
+existence or implementation does not establish acceptance or compatibility
+with the current baseline.
 
 | Proposal             | Scope |
 | -------------------- | --- |
-| `feat/VarColor`      | Public color variant and variant-based construction/access. |
 | `feat/Palette`       | Cube and grayscale alternatives extending VarColor. |
 | `feat/ConvertColors` | Explicit RGB promotion using the specified terminal palette. |
 | `feat/Blend`         | Whole-style blending and breaking strict style composition; rules open. |
@@ -212,32 +249,14 @@ bitwise-OR meaning proposed for free RGB `blend()` is superseded by averaging.
 Experimental branches such as `refactor/Crazy` are not accepted or approved for
 website inclusion merely because they exist.
 
-### VarColor and Palette
+### Palette and the later independent library
 
-The first {fmt}-compatible release must provide a C++11-compatible public color
-variant without requiring `std::variant`. The later independent C++23 release
-will use `std::variant`, with the planned alias
-`using var_color = std::variant<no_color_t, rgb, detail::rsvd_color, term_color>`.
-The default alternative is unspecified; retain `no_color_t` as the public
-sentinel.  Extend the existing constructors to accept the variant,
-keeping foreground required in the color-first form and avoiding ambiguity with
-default/emphasis construction. Named colors already have type `rgb`.
-
-Fluent already provides replacement, clearing, and the three short presence
-queries; do not reimplement them as pending VarColor work. VarColor proposes
-accepting the public variant in color setters and returning it by value from
-`fg()`/`bg()`, including the sentinel when unspecified. The current short
-getters return the internal color type, so changing their result type needs
-explicit source/API compatibility review. Preserve the older getter return
-types and empty-component behavior. Exact overloads, the transition strategy,
-and separate `clear_fg()`/`clear_bg()` conveniences remain open.
-
-Keep the public color variant, existing APIs, unspecified-color clearing, and
-presence queries available in C++11 for the first release. Reserve the
-`std::variant` implementation for the later C++23 release. Preserve
-RGB-OR composition, terminal conflicts, and the distinction between unspecified
-and specified black. Blink/flash interaction remains open only for the
-independent library design.
+The first {fmt}-compatible release already provides public C++11 color variants
+through `color_t`. The later independent release requires C++23 and will use
+`std::variant`; the exact public spelling and migration to that implementation
+remain design work. Keep the common styling API and unspecified-color behavior
+in mind without promising identical representations. Do not restore a C++17
+gate or treat public variants as pending work in the {fmt} release.
 
 Palette extends VarColor with `cube_color` for the 6×6×6 cube and `gray_color`
 for the 24-level grayscale ramp, supported by free and fluent color operations.
