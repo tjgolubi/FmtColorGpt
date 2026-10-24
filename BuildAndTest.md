@@ -145,7 +145,11 @@ The `::: name` blocks are **MkDocs directives**, not C++ or portable GitHub
 Markdown. `!!! note "Changed behavior"` needs the configured `admonition`
 extension. Check generated HTML for rendered API declarations and
 `<div class="admonition note">`, rather than judging raw `.md` pages on GitHub.
-The named-color page should contain all 141 unique swatches matching the source.
+The named-color page includes 141 named RGB swatches, 16 fixed terminal RGB
+swatches in separate normal/bright grids, 24 gray swatches, and all 216 cube
+colors. Cube rows vary red, columns green, and the six three-character fields
+inside each cell vary blue. Check values and indexed-palette offsets against
+independent expectations.
 
 `.github/workflows/fmtcolor-pages.yml` builds and publishes after pushes to
 `FmtColorDev`. The `github-pages` environment permits that branch. The separate
@@ -177,90 +181,128 @@ check can isolate a diagnostic. Supply actual headers as separate files;
 concatenating them can produce misleading errors. Include a negative check when
 testing a rejection path and verify scoped warning suppression does not leak.
 
-Existing tests cover construction, unspecified colors, terminal index/SGR
-boundaries, style composition and failures, comparisons, hashing/containers,
-and variadic RGB averaging. The pairwise RGB member and RGB OR operators do not
-have separate direct unit tests; do not claim that variadic tests cover them.
-Choose useful tests for actual risk rather than tests that mirror trivial code.
+### Regression coverage
 
-Fluent regression tests in `test/color-test.cc` cover all 256 emphasis
-masks for all eight attributes, enable/disable and idempotence, reference
-returns and chaining, independent bold/faint rendering, empty getters, color
-preservation, component replacement/clearing, and constexpr/noexcept behavior.
-Presence-query tests cover each emphasis bit, unspecified colors versus RGB
-and terminal black, clearing, and agreement with compatibility names.
+`FmtColorDev` color tests cover construction, all 216 cube RGB conversions
+against independent Xterm values, terminal mappings, gray/cube boundaries,
+range failures, type/index access and assignment, all five visitor alternatives,
+reference lifetimes, mixed-kind OR promotion, ANSI output, comparisons, hashes,
+plain/variant/style blending, `to_rgb()`, and `empty()`/fluent `clear()`.
+Check unspecified versus specified black, kind preservation for a lone blended
+color, independent style channels, and constexpr/noexcept contracts.
 
-ShortNames regression coverage includes alias type identity, all 16 terminal
-colors through both spellings, mixed old/new setters and queries, state
-preservation, constant evaluation, and ANSI output. The fluent regression
-helper exercises `strike()` across all 256 emphasis masks. Tests added since
-`main` use the shorter names; the older {fmt} tests retain their original names.
-
-VarColor regression tests cover empty sentinel traits and numeric helpers,
-construction, all four reference categories of type/index access, pointer
-identity, null and wrong-kind access, cross-alternative assignment and
-self-assignment, public reserved-type visitor overloads, forwarded visitors,
-mutation, reference/void results, exceptions, constant evaluation, and independent
-style getter values. Compiler-specific test workarounds are gated to old GCC
-and native MSVC; see [CppDesign.md](CppDesign.md#compiler-constraints).
-Palette will need range-boundary, new-alternative, and mixed-kind
-composition/renderer coverage.
+Fluent checks exercise all 256 emphasis masks, each attribute's enable/disable
+and idempotence, reference returns, component replacement/clearing, presence
+queries and aliases, and independent bold/faint rendering. ShortNames checks
+retain aliases and all 16 terminal colors. Existing upstream spellings remain
+in older tests. Targeted old GCC/native MSVC workarounds stay gated as described
+in [CppDesign.md](CppDesign.md#compiler-constraints).
 
 ## Current validation
 
-Verified October 23, 2026 for `FmtColorDev` commit
-[`1aaba9b5945dbf269a6a6b3f199e8f77e793be4f`](https://github.com/tjgolubi/fmt/commit/1aaba9b5945dbf269a6a6b3f199e8f77e793be4f):
+### Integrated Palette
 
-| Workflow | Successful jobs | Evidence |
-| --- | --- | --- |
-| Linux | 18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520987) |
-| Windows | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520980) |
-| macOS | 9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520976) |
-| Documentation build | 1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520981) |
-| Guide publication | 2, including deployment | [Run](https://github.com/tjgolubi/fmt/actions/runs/39903520990) |
+Verified October 23, 2026 for final amended `FmtColorDev` commit
+[`d9d64d361591311901e06c662c24879128c63724`](https://github.com/tjgolubi/fmt/commit/d9d64d361591311901e06c662c24879128c63724):
 
-All **43 jobs** passed for this exact final amended SHA, including VarColor,
-public `fmt::rsvd_color`, and the generated changelog. Local and GitHub SHAs
-matched. The runs and every job were independently checked, with no queued,
-failed, cancelled, or skipped jobs in the final successful results. Windows
-needed a rerun after an MSYS2 mirror download timed out during setup; the
-successful final attempt includes both MinGW jobs. The guide is published.
+| Workflow      | Successful jobs | Evidence |
+|---------------------|----| ---- |
+| Linux               | 18 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40042644485) |
+| Windows             | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40042644491) |
+| macOS               |  9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40042644509) |
+| Documentation build |  1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40042644586) |
+| Guide publication   |  2 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40042644505) |
 
-Local validation of the final public reserved-type change included strict
-C++11/C++23 header and test-source compilation, the focused Release/C++23
-`color-test` build and CTest pass, and the GitHub Pages documentation build.
-Earlier VarColor checks covered C++11/14/17/20/23 compilation and a C++11 color
-test executable; those do not replace exact-final-SHA CI. This is not a claim
-of a fresh local full-suite or tablet/Termux run. The CI matrix supplies old
-compiler and broader platform coverage.
+*Guide publication includes deployment*
 
-Website version 23 was separately validated on all three pages: 45 local
-links/anchors, unique IDs, unchanged demo downloads and agreement with the
-displayed C++, and two new VarColor examples compiled in C++11 and C++23.
-Browser inspection and native Sites publication succeeded. Website checks do
-not establish library runtime coverage; see [Website.md](Website.md#current-publication).
+All **43 jobs** passed, with exact local/GitHub/run SHAs matched and every job
+independently checked. The deployed guide includes the generated changelog's
+commit, palette swatches, conversions, blending, and style clearing.
+
+Feature development included C++11/14/17/20/23 test-source checks, strict
+C++11/C++23 headers, disabled-exception compilation, C++11 color-test execution,
+focused Release/C++23 tests, and guide builds. Final integration additionally
+verified the staged tree exactly matched the CI-passed candidate and reran the
+focused color tests. These do not claim a fresh local full-suite/Termux run for
+the feature branch; exact final-SHA CI supplies broader coverage.
+
+### Upstream compatibility branch
+
+Verified October 23, 2026 for `test/UpstreamCompatibility` commit
+[`21eba01b33becd9f94cd34a1a8758f64ecbc53c3`](https://github.com/tjgolubi/fmt/commit/21eba01b33becd9f94cd34a1a8758f64ecbc53c3). It is based on
+upstream `0fc31633`, with `color.h` identical to `FmtColorDev` at `d9d64d36`.
+
+| Workflow        | Successful jobs | Evidence |
+|---------------------|----| --- |
+| Linux               | 19 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40049194916) |
+| Windows             | 13 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40049194937) |
+| macOS               |  9 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40049194887) |
+| Documentation build |  1 | [Run](https://github.com/tjgolubi/fmt/actions/runs/40049194931) |
+
+All **42 jobs** passed for the matching local/GitHub/run SHA. Linux includes
+GCC 4.9/Clang 3.6 C++11 and GCC 16/C++26 reflection. This branch uses upstream
+CMake and workflows, without importing our added regression suite. Its only
+production library change is the enhanced `color.h`. Ancillary additions are
+the local build script, ignore rule, and
+[`UpstreamTestCompatibility.md`](https://github.com/tjgolubi/fmt/blob/21eba01b33becd9f94cd34a1a8758f64ecbc53c3/UpstreamTestCompatibility.md).
+The report's old `CheckTests` name refers to this renamed branch.
+
+Required upstream adjustments are intentional:
+
+- Six exception assertions become exact RGB-result checks: terminal black OR
+  black yields RGB zero, black OR normal white yields RGB `229,229,229`, and
+  terminal black OR named RGB black yields RGB zero, for both fg/bg.
+- Four no-throw expressions explicitly discard nodiscard results with `(void)`.
+- Two `doc/api.md` directives change from `fg/bg(detail::color_type)` to
+  `fg/bg(color_t)`; no documentation-handler change is needed.
+
+No other upstream tests required changes; do not say all tests pass unchanged.
+Locally, all **22 configured C++23 CTest tests** passed with no compiler warnings
+or reported individual skips, all **five color tests** passed strict C++11 with
+`-pedantic-errors -Wall -Wextra -Werror`, and upstream documentation built.
+This is separate from testing the complete FmtColorDev regression suite.
+
+For a fresh isolated local compatibility build:
+
+```bash
+cmake -S . -B build/check-upstream-tests -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_STANDARD=23 \
+  -DFMT_TEST=ON -DFMT_DOC=OFF
+cmake --build build/check-upstream-tests --parallel 8
+ctest --test-dir build/check-upstream-tests --output-on-failure
+```
+
+The report gives the standalone C++11 command. Logs are
+`build/check-upstream-build.log`, `build/check-upstream-ctest.log`,
+`build/check-upstream-cxx11.log`, and `build/check-upstream-doc.log`.
+The separate existing documentation build requires `FMT_DOC=ON` and the pinned
+environment. Switching branches may leave a configured build with other inputs;
+inspect its cache and source branch before interpreting a result.
 
 ### Coverage limits and follow-up
 
-GCC 16/C++26 reflection is temporarily commented out of the Linux matrix because
-its package service was unavailable. `fail-fast: false` lets independent jobs
-finish. [Issue #2](https://github.com/tjgolubi/fmt/issues/2) tracks restoring both
-previous settings and obtaining fresh results. Disabled coverage is not a pass.
-Upstream package caching is retained; an empty cache still needs downloads.
+FmtColorDev's Linux fail-fast is enabled; GCC 16/C++26 reflection is still
+commented out there. The upstream compatibility matrix includes and passed that
+job. [Issue #2](https://github.com/tjgolubi/fmt/issues/2) tracks the workflow
+exclusion; do not claim it is restored on FmtColorDev or close the issue without
+authorization. Upstream package caching remains dependent on downloads.
 
-PR-only `lint` and `fuzz` are not covered by these push results. Intentional
-individual test skips remain distinct from job success. Old Termux logs do not
-identify the current tested commit and are not current-SHA evidence.
+Push results do not establish passes for separate PR-only lint/fuzz workflows.
+Individual test skips remain distinct from successful jobs. No new tablet run,
+ABI verification, or performance benchmark is established by these checks.
+After every amendment, header refresh, or rebase, verify the exact new commit
+and every applicable job; never cite a baseline-only run for uncommitted work.
 
-Record branch/full SHA, platform/compiler, language mode, relevant CMake options,
-commands, results, and skips for new validation. Distinguish observed runs from
-Terry-reported results. For complete script logs:
+### Website validation
 
-```bash
-set -o pipefail
-./build.bash 2>&1 | tee build.log
-```
+Website version **26** adds the compatibility overview callout and detailed
+evidence section. Three pages and 39 local links/anchors were validated, with
+downloads and Future Work preserved; the new section was inspected locally and
+live after native Sites deployment succeeded. Earlier Palette page checks
+validated guide links and C++11/C++23 examples. See
+[Website.md](Website.md#current-publication) for exact publication provenance.
 
-`build/Testing/Temporary/LastTest.log` contains CTest output, not compiler warnings.
-Earlier debugging logs and superseded results remain in Git history. Follow
-[Workflow.md](Workflow.md#ci-gate-and-acceptance) for the exact-SHA CI gate.
+For new test results, record branch/full SHA, toolchain, mode, CMake options,
+commands, results, and skips. Distinguish observed checks from Terry reports.
+`build/Testing/Temporary/LastTest.log` is test output, not compiler diagnostics.
+Follow [Workflow.md](Workflow.md#ci-gate-and-acceptance) for integration gates.

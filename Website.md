@@ -20,30 +20,32 @@ and fork integration separate from upstream acceptance.
 
 The current structure is:
 
-- [Overview](https://fmtcolor.ardentokapi66.chatgpt.site/): current features, the
-  two deliverables, design, and demonstration.
+- [Overview](https://fmtcolor.ardentokapi66.chatgpt.site/): features, two
+  deliverables, a prominent upstream-compatibility callout, design, and demo.
 - [The contribution](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html):
-  the foundation, Fluent, ShortNames, and VarColor at `1aaba9b5`, with the
-  upstream baseline, examples, compatibility changes, and passing CI.
+  upstream compatibility evidence first, followed by implemented styling,
+  palette colors, conversion, blending, compatibility changes, and final CI.
 - [Future work](https://fmtcolor.ardentokapi66.chatgpt.site/work-in-progress.html):
-  Palette, ConvertColors, whole-style blending, and StyledText, with links back
-  to integrated features.
+  the retained introduction/development summary, then `feat/StyledText` and
+  inclusion policy. Repeated completed-feature sections are removed.
 
-VarColor is integrated; Palette is the next planned addition. Other dependencies
-remain open. Named RGB constants, RGB averaging, and Fluent are implemented;
-style blending is not. Branch inclusion needs Terry's approval, not merely a
-conventional prefix or existence. Experimental/play branches such as Crazy stay
-off the public list unless explicitly approved. Approval to describe a proposal
-does not authorize implementation or acceptance.
+Fluent, ShortNames, VarColor, Palette, RGB conversion, color/style blending,
+and style clearing are integrated on `FmtColorDev` at `d9d64d36`. The branch
+contains five feature commits and a publication fix above upstream `0fc31633`.
+All 43 final integration CI jobs passed, including guide deployment. The
+separate `test/UpstreamCompatibility` commit `21eba01b` passed 42 jobs using
+upstream test infrastructure and the documented adjustments. Neither result
+means the contribution has been accepted into fmtlib/fmt.
 
-Current `FmtColorDev` is `1aaba9b5`: four feature commits and the separate
-publication fix above upstream `0fc31633`. Fluent supplies component access,
-presence queries, and all eight attribute controls. ShortNames supplies
-`term_color`, `emphasis::strike`, `strike()`, and `is_strike()` with compatible
-older names. VarColor supplies public `color_t` and `rsvd_color`, type/index
-access, and single-color visitation throughout C++11 and later. All 43 CI jobs
-passed for the final amended commit. The website does not claim fmtlib has merged the contribution. Check exact refs before
-changing links; source and tests establish implementation.
+Keep upstream compatibility prominent and link its exact report/diff/CI.
+State the six result-expectation changes, four explicit nodiscard discards,
+and two documentation-signature changes; do not claim unchanged-test success.
+These reflect intended features. Preserve the distinction between source-test
+compatibility and numeric/binary compatibility or measured performance.
+
+Branch inclusion needs Terry's approval; an experimental/play branch such as
+Crazy does not belong merely because it exists. Describing a proposal does not
+authorize implementation. See [CppDesign.md](CppDesign.md) for current behavior.
 
 ## User guide
 
@@ -58,7 +60,8 @@ directives and `!!! note` admonitions that GitHub Markdown does not process.
 Source links remain appropriate when explicitly labeled as source.
 
 The guide covers colors, emphasis, text styles, styled arguments, formatting,
-printing, and a separate named-color swatch page. Doxygen comments supply shared
+printing, palette conversion/blending, empty/clear style operations, and a
+separate named-color swatch page. Doxygen comments supply shared
 reference text; Markdown provides organization and examples. Keep RGB concepts
 before named RGB constants and numeric representation details after ordinary
 usage. Keep emphasis discussion on its own page. Normal enum-underlying
@@ -87,11 +90,23 @@ Pages source and uploads generated HTML as an artifact, not committed output.
 The ordinary `doc` workflow builds but does not publish this guide.
 See `support/fmtcolor-pages.md` and [BuildAndTest.md](BuildAndTest.md#documentation).
 
-Guide build and deployment succeeded for `1aaba9b5`. The guide includes
-public color variants, access and visitation, the grouped Fluent API, presence
-queries, and shorter names, with compatibility and reference-lifetime notes.
-The VPS remains an unused alternative host, not a second deployment completed
-by this work.
+Guide build and deployment succeeded for `d9d64d36`. The guide includes
+five-alternative public variants, `to_rgb()`, color/style blending, `empty()`
+and `clear()`, and the grouped Fluent API. Constructors and fluent operations
+precede the less desirable OR examples; the scoped `using enum` style example
+is labeled C++20 and later. Free fg/bg docs explain ADL convenience.
+
+The Colors page orders terminal, RGB, gray, cube, unspecified, then variants.
+Terminal tables include RGB equivalents and link to swatches, as do gray/cube
+sections. Named Colors separates normal and bright terminal grids, includes
+24 gray levels, and shows all 216 cube colors with red rows, green columns,
+and six blue digits padded to three monospace characters per cell. The
+Overview compares blend and OR using red/bright-red against blue/bright-blue,
+with aligned columns and colored input labels. Blend immediately follows
+Palette on the contribution website, before comparisons.
+
+Preserve the swatch orientation, padding, contrast, responsive grids, and
+the fixed-Xterm-theme explanation. The VPS remains an unused alternative host.
 
 ## Demonstration and future design
 
@@ -115,11 +130,13 @@ header name introduces a dependency on fmtlib in the independent library.
 
 Preserve these design distinctions:
 
-- Current RGB and style composition ORs overlapping RGB bits and rejects
-  terminal conflicts. RGB `blend()` averages channels. Strict style composition
-  and whole-style blending remain proposals.
-- Fluent setters replace state; sequential ANSI SGR commands update terminal
-  state. Neither is the proposed strict composition rule.
+- Color/style OR promotes overlapping specified colors to RGB and combines
+  channel bits. Free `blend()` averages specified channels, independently for
+  style fg/bg, and ORs emphasis. Unspecified inputs are ignored; one specified
+  color retains its kind. Strict rejection is superseded, and `rgb::blend()`
+  is removed.
+- Constructors/fluent setters choose or replace state. Sequential ANSI SGR
+  commands update terminal state; they are distinct from value composition.
 - Bold/faint are independent. {fmt} retains conceal and omits flash; the
   independent library replaces conceal with flash.
 - Absolute boundaries reset terminal state and block enclosing blending in the
@@ -183,35 +200,36 @@ and exact archive returned for the selected site.
 
 ## Current publication
 
-**Public Site version 23** is live at
+**Public Site version 26** is live at
 [fmtcolor.ardentokapi66.chatgpt.site](https://fmtcolor.ardentokapi66.chatgpt.site).
-It describes the integrated foundation, Fluent, ShortNames, and VarColor, links
-to `1aaba9b5` and its 43 passing CI jobs, and points to the generated guide.
-The contribution page explains public `color_t`, reference/pointer access,
-visitation with `fmt::rsvd_color`, representation and compatibility changes,
-and C++11 support. The overview and future-work plan reflect VarColor's
-integration; Palette remains next. The demo remains a future acceptance target.
-
-The complete {fmt}-compatible release requires C++11 and uses the custom union
-implementation in every supported mode. The later independent release requires
-C++23 and will use `std::variant`. The former C++17-gated variant proposal and
-stale C++26 minimum on the overview have been replaced.
+The overview prominently links to
+[upstream compatibility](https://fmtcolor.ardentokapi66.chatgpt.site/integrated-changes.html#upstream-compatibility).
+That section documents the exact compatibility changes and 42 successful jobs
+for `21eba01b`, including GCC 16/C++26 reflection. The contribution also covers
+integrated Palette, conversion, color/style blending, and the separate 43-job
+FmtColorDev result at `d9d64d36`. The complete {fmt} release supports C++11;
+the later independent library requires C++23 and `std::variant`.
 
 | Item | Current value |
 | --- | --- |
 | Site project ID | `appgprj_6ad129c3e8408191b873a4e06e601c63` |
-| Source commit | `2db5c892afa9d02953a4c3673e1f67af8269b9dd` |
-| Saved version ID | `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_cef55e81f920819189c9ad64c117ae80` |
-| Successful deployment ID | `appgdep_6adaf11f694c8191b641df3e592ff2d0` |
+| Source commit | `10ae36cd5769b8e180b9f1a5cf91487bc6b48ea5` |
+| Saved version ID | `appgprj_6ad129c3e8408191b873a4e06e601c63~appgver_dae570da194c8191abb781b08b575590` |
+| Successful deployment ID | `appgdep_6adc09e7ca248191808e71b04cc4dfc1` |
 | Audience | Public |
 
-Validation covered all three pages, 45 local links/anchors, unique IDs,
-whitespace, current source/CI links, and agreement between the displayed and
-downloadable demo. Both new VarColor example blocks compiled in C++11 and
-C++23. The contribution and future-work pages were inspected in the local
-browser preview; the live contribution was checked after native deployment
-returned `succeeded`. Demo content, styled output, and both downloads are
-preserved. Website checks are not library runtime or tablet validation.
+Native Sites deployment returned `succeeded`. Validation covered all three
+pages, 39 local links/anchors, unique IDs, whitespace, exact compatibility CI
+links, unchanged downloads, and preserved Future Work. The new compatibility
+section was inspected locally and live. Earlier Palette content validation
+also checked guide anchors, demo/source agreement, and C++11/C++23 examples.
+The demo remains a future acceptance target; nested text is not implemented.
+Website checks do not establish library runtime or tablet coverage.
 
-Future migration to MkDocs/Material would be a separate task, not an automatic
-consequence of maintaining this site.
+Keep preview screenshots outside the source checkout (or in a helper-supported
+ignored directory) so the helper's commit step does not add them. Package an
+archive outside the website checkout; on this Windows setup the helper rejected
+paths inside it. Preserve the project, opening result, source commit, archive,
+saved version, and successful deployment when continuing work.
+
+Future migration to MkDocs/Material remains a separate task.

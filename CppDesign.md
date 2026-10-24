@@ -33,166 +33,167 @@ naming and API conventions.
 
 ## Implemented foundation
 
-The current `FmtColorDev` tip is `1aaba9b5`, which integrates VarColor on
-ShortNames (`8e8b8132`), Fluent (`b5b14ed2`), the `0c7dad5c` foundation, and
-the `60eed619` guide-publication configuration. Exact
-links and baseline are in
-[README.md](README.md#current-baseline). Current source and tests take
-precedence over descriptions of private implementation details here.
+`FmtColorDev` at `d9d64d36` integrates Palette on the foundation, Fluent,
+ShortNames, and VarColor. Exact history and baseline are in
+[README.md](README.md#current-baseline). Current source and tests establish
+implemented behavior; private numeric representations are not stable contracts.
 
-Use `term_color`, `emphasis::strike`, `text_style::strike()`, and
-`text_style::is_strike()` in new documentation, examples, and tests.
-The former names `terminal_color`, `emphasis::strikethrough`,
-`strikethrough()`, and `is_strikethrough()` remain for source compatibility;
-use them only when documenting or testing that compatibility. The enum alias
-denotes the same type; both emphasis names select bit 7, and the old methods
-forward to the new methods with the same default argument, reference return,
-`noexcept`, and constant-evaluation behavior. This rename preserves source
-spellings and rendering; the foundation has already crossed the ABI-compatibility
-boundary, so it is not an ABI-preservation requirement for ShortNames.
+Use `term_color`, `emphasis::strike`, `strike()`, and `is_strike()` in new
+examples and tests. `terminal_color`, `emphasis::strikethrough`,
+`strikethrough()`, and `is_strikethrough()` remain compatible aliases or
+forwarders. Preserve their use in older upstream tests and compatibility checks.
 
 ### Colors and numeric representations
 
-- `fmt::color` is a namespace of 141 `constexpr rgb` constants. Names and RGB
-  values match the former enum. Decimal component initializers and
-  `FMT_INLINE_VARIABLE` retain C++11 support.
-- `rgb` has independent red, green, and blue channels. Packed construction from
-  `uint32_t` is explicit and uses the low 24 bits as `0xRRGGBB`; explicit
-   conversion back produces `0x00RRGGBB`.
-- `rgb::operator|=` and nonmember `operator|` OR corresponding channel bits.
-   They do not average or perform alpha compositing.
-- `rgb::blend(rgb)` mutates the object to the pairwise channel average and
-  returns `rgb&`. Variadic `fmt::blend(rgb, ...)` returns an equal-weight average
-  of one or more RGB arguments, leaving them unchanged. Fractional channels
-  are rounded down. Repeated pairwise averaging has different weights from a
-  single variadic average. Named constants can be passed directly.
-- `no_color_t` and `no_color` denote unspecified color, distinct from RGB black
-  and terminal black. They do not represent a terminal-reset instruction.
-- `term_color` uses indices 0–15. Rendering maps normal indices 0–7 to
-  foreground/background SGR 30–37/40–47 and bright indices 8–15 to
-  90–97/100–107. A zero-valued black remains specified via its discriminator.
+- `fmt::color` is a namespace of 141 `constexpr rgb` constants retaining the
+  former names and RGB values, plus 16 `term_*`/`term_bright_*` RGB constants
+  matching the fixed terminal conversion palette.
+- `rgb` stores three channels. Explicit packed construction takes the low
+  24 bits as `0xRRGGBB`; explicit conversion returns `0x00RRGGBB`.
+- `no_color_t`/`no_color` denote unspecified color, distinct from specified
+  black. They do not store or emit a terminal-reset instruction.
+- `term_color` has zero-based indices 0–15. Normal foreground/background SGR
+  codes are 30–37/40–47; bright codes are 90–97/100–107.
+- `gray_color` has `value_type = uint8_t`, indices 0–23, and equal RGB channel
+  levels `8 + 10 * index`. Indexed SGR uses palette index `232 + index`.
+- `cube_color` has `value_type = uint8_t`, channels 0–5 and cube index
+  `36*r + 6*g + b` in 0–215. RGB levels are `{0, 95, 135, 175, 215, 255}`;
+  indexed SGR uses `16 + index`.
 
-`underlying_type<T>::type` and `to_underlying(value)` expose numeric values:
-`uint8_t` for terminal colors/emphasis, `uint32_t` for RGB/`color_t` values,
-`unsigned` for the empty color sentinels (value zero), and `uint64_t` for text styles. These are not stable serialization contracts.
-`to_underlying(text_style)` is a non-template friend overload, not an explicit
-integral conversion operator. `narrow_cast` is an unchecked intentional cast;
-it does not validate ranges. `enum_cast` expresses enum-related casts.
+Cube and gray constructors validate the original unsigned values before
+narrowing, using `FMT_THROW(std::out_of_range(...))` and upstream's disabled-
+exception machinery. Both implicitly convert to `rgb`, as do terminal colors.
+Terminal conversion uses this fixed Xterm-default mapping, in index order:
+
+|Indices | RGB values |
+| ------ | --- |
+|  0– 3  | `(0,0,0)`, `(205,0,0)`, `(0,205,0)`, `(205,205,0)` |
+|  4– 7  | `(0,0,238)`, `(205,0,205)`, `(0,205,205)`, `(229,229,229)` |
+|  8–11  | `(127,127,127)`, `(255,0,0)`, `(0,255,0)`, `(255,255,0)` |
+| 12–15  | `(92,92,255)`, `(255,0,255)`, `(0,255,255)`, `(255,255,255)` |
+
+This mapping cannot discover a user's terminal theme. `underlying_type<T>` and
+`to_underlying()` expose numeric values: `uint8_t` for terminal, cube, gray,
+and emphasis; `uint32_t` for RGB and `color_t`; `unsigned` zero for `no_color_t`;
+and `uint64_t` for styles. `narrow_cast` is unchecked; `enum_cast` expresses
+enum-related casts. Numeric helpers are not archive interfaces.
+
+### RGB conversion and blending
+
+Free `to_rgb(T)` returns `rgb` for the four plain color types, constrained by
+`detail::is_color` or the C++23 `Color` concept. `to_rgb(no_color_t)` preserves
+the sentinel. `to_rgb(color_t)` returns `color_t`, holding RGB for specified
+input and unspecified otherwise. Inputs are unchanged; all are `noexcept`
+and support C++11 constant evaluation. Implementation uses `rgb(color)` rather
+than braced conversion to satisfy old compiler paths.
+
+Free variadic `blend()` supports:
+
+- Plain colors only: return an equal-weight RGB channel average.
+- A `color_t` or `no_color` argument: return `color_t`, ignore unspecified
+  inputs, return unspecified for none specified, preserve the kind of one
+  specified color, and return averaged RGB for two or more.
+- Styles only: return `text_style`, averaging foreground and background
+  independently with those same unspecified/kind rules, and ORing emphasis bits.
+
+All channels are summed before division; fractional results round down. Inputs
+are unchanged. Overloads reject non-colors and mixed raw-color/style arguments.
+They are `noexcept` and constexpr in C++11 via recursive helpers; gated C++23
+implementations use concepts and loops. The mutating `rgb::blend()` member is
+removed. No alpha compositing or nearest-palette demotion is implemented.
 
 ### Styles, composition, and containers
 
-The public constructors are non-explicit:
+The non-explicit constructors are:
 
 ```cpp
-text_style(emphasis emp = emphasis{},
-           color_t fg = no_color,
+text_style(emphasis emp = emphasis{}, color_t fg = no_color,
            color_t bg = no_color) noexcept;
-text_style(color_t fg,
-           color_t bg = no_color,
+text_style(color_t fg, color_t bg = no_color,
            emphasis emp = emphasis{}) noexcept;
 ```
 
-They support emphasis-first and foreground-first construction, default empty
-styles, implicit emphasis conversion, and background-only construction with
-`no_color` first. Colors may be named RGB constants, other RGB values, terminal
-colors, or the sentinel.
+They support foreground-first, emphasis-first, background-only, and default
+empty construction. All plain colors and the unspecified sentinel implicitly
+convert to `color_t`. Free `fg(color_t)`/`bg(color_t)` are convenience factories;
+ADL finds them for color arguments from namespace `fmt`.
 
-`emphasis | emphasis` returns `emphasis`. Style `|` and `|=` combine emphasis
-bits and independently specified channels. Overlapping RGB colors are bitwise
-ORed; a same-channel conflict involving a terminal color is an error, even for
-identical terminal colors. Failed composition leaves the left operand unchanged.
+`emphasis | emphasis` returns `emphasis`. RGB OR combines corresponding bits.
+Color/style `|` and `|=` use unspecified colors as identity, preserving the
+other kind. Two specified colors promote to RGB and OR corresponding channel
+bits, even for identical palette values; terminal overlaps do not throw.
+Style channels are handled independently and emphasis bits are ORed. Operators
+are `noexcept`; mutating style/color operations are constexpr in supported
+C++14+ paths. The earlier strict-rejection proposal is superseded.
 
-Presence checks distinguish unspecified channels from black. Foreground,
-background, and emphasis getters accept empty components and return an
-unspecified color or empty emphasis. The packed-value constructor remains
-private and explicit. Fluent accessors are implemented as described below.
-Whole-style `blend()` remains a proposal.
+Prefer constructors and fluent setters to choose colors, and free `blend()`
+to average them. OR is cheaper arithmetic but retains bright channel bits.
+No performance benchmark has established an end-to-end comparison with upstream.
+Compilers can fold constant fluent operations; constexpr contexts guarantee
+constant evaluation where supported.
 
-RGB, public `color_t`, and `text_style` support equality, ordering,
-and `std::hash`. Ordering follows their unsigned packed values; RGB orders red,
-then green, then blue, not brightness. Hashes use the same numeric values and
-are not persistent encodings. `FMT_COLOR_COMPARISONS(C)` supplies defaulted
-`operator<=>`/generated equality with a suitable C++20 library, and six ordinary
-operators otherwise. `color_t` supplies explicit packed-value comparisons
-because a union cannot use memberwise defaulted comparisons. The macro is
-undefined after use.
+RGB, `color_t`, and `text_style` support comparisons and `std::hash`. Ordering
+uses unsigned packed values; RGB orders red, green, then blue, not brightness.
+Hashes are not persistent encodings. Suitable C++20 libraries provide `<=>`;
+fallbacks provide six ordinary comparisons. A union needs explicit packed-value
+comparison rather than defaulted memberwise comparison.
 
 ### Fluent component and attribute access
 
-`fg()`, `bg()`, and `emph()` are const getters returning component values.
-The color getters return public `color_t` by value, preserving RGB, terminal,
-or unspecified state. Each returned color is independent of the style.
-`fg(color)` and `bg(color)` replace one channel; `no_color` clears it to
-unspecified without storing a terminal reset. `emph(attributes)` replaces
-the entire emphasis mask; `emphasis{}` clears it. Setters return
-`text_style&` and preserve unrelated components.
+Const getters `fg()`, `bg()`, and `emph()` return values. Empty color channels
+return unspecified, empty emphasis returns `emphasis{}`, and each returned
+`color_t` is independent of the style. Setters `fg(color)`, `bg(color)`, and
+`emph(attributes)` replace their whole component and preserve the others.
+Passing `no_color` clears a channel; `emphasis{}` clears all attributes.
 
-`has_fg()`, `has_bg()`, and `has_emph()` are const boolean presence queries.
-They distinguish unspecified colors from specified RGB/terminal black and
-detect any emphasis bit. All three return false for an empty style.
+`has_fg()`, `has_bg()`, and `has_emph()` distinguish unspecified from specified
+black and detect any emphasis bit. Const `empty()` is true only when both
+colors are unspecified and all emphasis is unset. Fluent `clear()` restores
+the default style, returns `text_style&`, and supports repeated clearing and
+reuse. It does not emit ANSI output.
 
-Each of `bold`, `faint`, `italic`, `underline`, `blink`, `reverse`, `conceal`,
-and `strike` has a setter taking `bool enable = true`, returning
-`text_style&`, and an `is_*()` const boolean getter. A setter changes only
-its own bit; unset queries return false. Bold and faint are independent and
-render together without library-imposed precedence. Appearance depends on
-the terminal. Retain conceal and omit flash in {fmt}; the independent
-library replaces conceal with flash. Common styling source does not make
-those two attributes interchangeable.
+All eight attributes have `is_*()` queries and setters taking
+`bool enable = true`. Setters return `text_style&`, change only their own bit,
+and support chaining. Bold and faint are independent and both render when set;
+their appearance depends on the terminal. Retain conceal and omit flash in
+{fmt}; the later independent library replaces conceal with flash.
 
-All accessors are `noexcept`. Getters support C++11 constant evaluation;
-mutating setters use upstream constexpr compatibility macros for C++14+
-where supported. The short names own the implementations; older getter and
-presence names remain forwarding aliases for backward compatibility. Use
-short names throughout the user guide, with one note for the older names.
-
-Fluent adds no data members and changes no existing layout, discriminators,
-packed encodings, composition, or rendering rules. Source review identified
-no ABI break; mixed-version binaries were not tested. Do not confuse this
-with the foundation's deliberate changes relative to upstream.
+All accessors are `noexcept`. Getters, presence queries, and `empty()` are
+C++11 constexpr; mutating setters and `clear()` use `FMT_CONSTEXPR` for C++14+
+where supported. Older component/presence names remain forwarding aliases.
 
 ### Public color variants and internal representation
 
-`fmt::color_t` is a public discriminator-and-union value in every supported
-language mode, including C++11. The alternatives are `no_color_t`, `rgb`,
-`rsvd_color`, and `term_color`; `color_t::kind` names their indices `none`,
-`rgb`, `rsvd`, and `term` (0, 1, 2, and 3). Default construction is unspecified.
-Construction and assignment from the alternatives are implicit and `noexcept`;
-copying or moving preserves the active kind and value.
+`color_t` uses a discriminator and union in every supported mode, including
+C++11. Its alternatives/kinds are `no_color_t`/`none` (0), `rgb`/`rgb` (1),
+`term_color`/`term` (2), `cube_color`/`cube` (3), and `gray_color`/`gray` (4).
+`rsvd_color` is removed. Default construction is unspecified. Construction and
+assignment from alternatives are implicit and `noexcept`.
 
-`rsvd_color` is public in `fmt` because visitors must accept every alternative.
-Its private user-provided constructor prevents construction, including C++11
-aggregate initialization. No valid color activates it. Both empty sentinels
-have `underlying_type`/`to_underlying` support for generic numeric dispatch.
+Type/index `get` preserves all four const/reference categories and reports
+`format_error` on a mismatch. `get_if` returns a pointer or null for a wrong
+kind/null input; `holds_alternative` classifies by type. Single-color `visit`
+forwards visitor and color category and requires the same result type for all
+five alternatives. Values, references, void, and propagated exceptions work.
+Access/classification/visitation support C++11 constant evaluation; assignment
+uses supported C++14+ paths.
 
-Type- and index-based `get` preserve all four const/reference categories and
-report `format_error` for a wrong kind. `get_if` returns a pointer or `nullptr`
-for a mismatch or null input; `holds_alternative` classifies by type. `visit`
-supports one color, forwards the visitor and color category, and requires the
-same result type for all four alternatives, including the reserved one. Value,
-reference, and `void` results work; visitor exceptions propagate.
+References and pointers must not outlive the owner or a change of alternative.
+Copy an alternative extracted directly from a temporary style getter. Public
+reference access is distinct from returning a reference to a temporary copy.
 
-References and pointers must not outlive their owning color or an alternative
-change. Copy an alternative extracted directly from a temporary style getter.
-Const access/classification support C++11 constant evaluation; mutable access
-and assignment support C++14+ where the compiler permits it.
-
-`to_underlying(color_t)` produces the packed numeric value;
-`detail::unpack_color` is internal. The public type, API signatures, and
-reference-returning access are compatibility changes.
-
-VarColor preserves packed `text_style` storage, RGB-OR composition, terminal
-conflicts, comparisons, hashing, and ANSI rendering. The packed discriminator
-values are `00` unspecified, `01` RGB, `10` reserved, and `11` terminal.
-Composition's addition/overflow check depends on `10` remaining unused. Palette
-must review those invariants with classification, access, and rendering. This
-preservation does not establish a stable ABI or serialization format.
+Styles pack each color as 24 payload bits plus three discriminator bits:
+foreground bits 0–26, background 27–53, emphasis 54–61. Bits 62–63 are unused.
+The old addition/overflow composition trick is gone. `to_underlying` and
+internal `detail::unpack_color` reflect these changed representations; object
+size does not establish ABI or persisted-data compatibility.
 
 ### Compiler constraints
 
-ANSI generation uses append helpers and an emphasis-to-SGR table. RGB parameters
-retain three-digit padding. Packed colors/styles have changed from upstream;
-object size alone cannot establish ABI or persisted-data compatibility.
+ANSI generation uses append helpers, visitation, and an emphasis-to-SGR table.
+RGB and indexed-palette parameters retain three-digit padding. Packed colors
+and styles have changed from upstream; object size alone cannot establish ABI
+or persisted-data compatibility.
 
 Preserve these targeted compiler provisions:
 
@@ -213,96 +214,50 @@ Preserve these targeted compiler provisions:
 - Keep unsigned emphasis/SGR arithmetic, correctly sized masks, and deliberate
   narrow casts. Local compilation without CI's strict warnings is insufficient
   evidence of compatibility.
+- Keep `rgb(_data.terminal)`, `rgb(_data.cube)`, and `rgb(_data.gray)`
+  parenthesized during promotion: Clang 3.6 rejects the equivalent braced
+  conversion. Preserve the gated terminal-palette initialization/conversion
+  paths, C++11 conditional implementations of visit/unpack, and C++14 switch
+  implementations. Literal `constexpr` is used where C++11 permits it.
+- C++11 assertions must not invoke release-mode `FMT_ASSERT` on valid paths.
+  Test self-composition uses `self.operator|=(self)` to avoid Clang's
+  self-assignment warning. Disabled-exception and C++20 module paths matter.
 
 ### Compatibility with upstream
 
-The contribution deliberately changes the named-color enum into RGB constants,
-makes packed RGB construction explicit, changes emphasis-OR's result type, and
-renumbers terminal colors. Numeric/binary representations require separate
-review from symbolic styling source. The user guide records changed behavior
-without instructing users how to repair their code.
+Production library changes are confined to `include/fmt/color.h`. Deliberate
+changes include RGB constants replacing the named-color enum, explicit packed
+RGB construction, emphasis OR's return type, terminal renumbering, the public
+variant API, automatic terminal promotion, and changed packed representations.
+The guide records behavior changes without treating every one as a defect.
 
-Terminal renumbering is negotiable during upstream review. If upstream requires
-SGR-valued enum constants, retain that representation in the {fmt} deliverable
-and defer renumbering to the independent library. Symbolic styling should work
-with either representation. This is a contingency, not an upstream request or
-acceptance already received.
+`test/UpstreamCompatibility` at `21eba01b` verifies this header with upstream
+tests and workflows. Six terminal-overlap exception assertions become exact
+RGB-result checks, four discarded nodiscard results are explicit, and two
+documentation signatures use `color_t`. All other upstream tests are unchanged.
+All 42 CI jobs passed; see [BuildAndTest.md](BuildAndTest.md#upstream-compatibility-branch).
+Do not claim every original test passes unchanged or infer ABI/performance
+compatibility from passing source tests.
+
+Terminal renumbering remains negotiable during upstream review. If maintainers
+require SGR-valued enum constants, retain that representation in the {fmt}
+deliverable and defer renumbering to the independent library. This remains a
+contingency, not a request received or accepted.
 
 ## Planned work
 
-Fluent, ShortNames, and VarColor are integrated. **Palette** is the next
-planned integration. Other positions and exact dependencies remain open.
-Inspect existing local branches before reusing them; an older branch's
-existence or implementation does not establish acceptance or compatibility
-with the current baseline.
+Palette, RGB conversion, color/style blending, Fluent, ShortNames, and public
+variants are implemented. They are not pending ConvertColors or Blend branches.
+`feat/StyledText` remains a proposal for nested text, absolute boundaries, and
+lazy blending. Its ownership, rendering, and first increment still need review.
+Parsing, display width, and serialization remain separate design work.
 
-| Proposal             | Scope |
-| -------------------- | --- |
-| `feat/Palette`       | Cube and grayscale alternatives extending VarColor. |
-| `feat/ConvertColors` | Explicit RGB promotion using the specified terminal palette. |
-| `feat/Blend`         | Whole-style blending and breaking strict style composition; rules open. |
-| `feat/StyledText`    | Nested styled text, absolute styles, and lazy blending. |
-
-Named RGB constants, RGB averaging, and Fluent are implemented, not pending
-proposals. The older
-bitwise-OR meaning proposed for free RGB `blend()` is superseded by averaging.
-Experimental branches such as `refactor/Crazy` are not accepted or approved for
-website inclusion merely because they exist.
-
-### Palette and the later independent library
-
-The first {fmt}-compatible release already provides public C++11 color variants
-through `color_t`. The later independent release requires C++23 and will use
-`std::variant`; the exact public spelling and migration to that implementation
-remain design work. Keep the common styling API and unspecified-color behavior
-in mind without promising identical representations. Do not restore a C++17
-gate or treat public variants as pending work in the {fmt} release.
-
-Palette extends VarColor with `cube_color` for the 6×6×6 cube and `gray_color`
-for the 24-level grayscale ramp, supported by free and fluent color operations.
-Plan to use discriminator `10` while preserving existing encodings; review the
-composition overflow algorithm and mixed-kind combinations before doing so.
-Range validation, constructors, and promotion signatures remain open. Preserve
-RGB-OR and terminal-conflict behavior through these additive features. Unchanged
-layout does not prove mixed-version ABI safety when new values are introduced.
-
-### ConvertColors
-
-Plan explicit promotion of supported colors to RGB. A compile-time palette
-cannot know a user's terminal theme. The agreed Xterm-default mapping, in
-terminal-color index order, is:
-
-```cpp
-inline constexpr std::array<rgb, 16> terminal_palette = {{
-  rgb{  0,   0,   0}, rgb{205,   0,   0},
-  rgb{  0, 205,   0}, rgb{205, 205,   0},
-  rgb{  0,   0, 238}, rgb{205,   0, 205},
-  rgb{  0, 205, 205}, rgb{229, 229, 229},
-  rgb{127, 127, 127}, rgb{255,   0,   0},
-  rgb{  0, 255,   0}, rgb{255, 255,   0},
-  rgb{ 92,  92, 255}, rgb{255,   0, 255},
-  rgb{  0, 255, 255}, rgb{255, 255, 255}
-}};
-```
-
-This is a proposed mapping, not an implemented palette API or a claim about
-every terminal. Nearest-palette demotion using Euclidean RGB distance is a
-possible later extension. Naming ConvertColors adds no conversion scope or
-integration order. Palette conversions depend on those color types being
-available; precise APIs remain open. No implicit promotion is required.
-
-### Style blending and strict composition
-
-The future Blend proposal would make both style `|` and `|=` reject two
-specified colors in one channel, including identical colors. Independent
-foreground/background/emphasis composition remains valid. Introduce explicit
-whole-style blending in the same feature as that breaking operator change.
-
-Terry has discussed whether a style `blend()` is useful but has not authorized
-its implementation. RGB averaging does not settle its semantics. The use case,
-emphasis combination, unspecified-channel handling, terminal-color promotion or
-rejection, mutation/return type, and interaction with absolute styles remain
-open. Do not restore the superseded bitwise RGB `blend()` definition by accident.
+The later independent library requires C++23 and `std::variant`; migration
+details remain open. The {fmt} release retains C++11 throughout. Proposed
+StyledText representations below do not settle a C++11 implementation path.
+Do not restore a C++17 variant gate or the superseded strict style-OR policy.
+Experimental branches such as `refactor/Crazy` need explicit approval for
+implementation or website inclusion.
 
 ## Structured styled text
 
@@ -361,8 +316,8 @@ previously rejected free `blend(styled_text, text_style)` operation.
 
 The motivation is independently styled phrases wrapped in a paragraph's
 background and then an enclosing emphasis, while preserving their structure.
-Color promotion uses the explicit conversion design; complete blending rules
-still need agreement.
+Color promotion and value-level style blending are implemented. Their use
+through nested inheritance and absolute boundaries still needs agreement.
 
 ## Rendering, parsing, and serialization
 
@@ -378,7 +333,7 @@ The legacy markers are `ESC[00m` for push and `ESC[000m` for pop, distinct from
 implementing compatibility; they are references, not wholesale implementation
 instructions. Sequential SGR parsing follows terminal state changes: reset
 clears state, foreground reset clears foreground, and intensity reset clears
-bold/faint. Do not use strict style composition to interpret those commands.
+bold/faint. Do not use style OR composition to interpret those commands.
 Push/pop save and restore state. Visually equivalent output is sufficient;
 identical SGR byte sequences are unnecessary.
 

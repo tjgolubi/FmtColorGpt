@@ -124,9 +124,11 @@ Pull-request-only checks such as `lint` and `fuzz` must pass when applicable;
 push results do not establish those passes. Do not trigger unrelated release,
 security, or publication workflows merely to manufacture a broader result.
 
-Record intentional skips and exclusions explicitly. The current temporary
-GCC 16 exclusion and `fail-fast: false` are tracked in
-[issue #2](https://github.com/tjgolubi/fmt/issues/2), not treated as GCC 16 coverage.
+Record intentional skips and exclusions explicitly. Linux fail-fast is enabled
+on `FmtColorDev`; its GCC 16/C++26 reflection exclusion remains tracked in
+[issue #2](https://github.com/tjgolubi/fmt/issues/2). The separate upstream
+compatibility branch includes that job and has passed it. Results from one
+branch do not restore disabled coverage on another.
 
 ## Commit messages and changelog
 
@@ -156,7 +158,7 @@ external processing commands. Use the generated file, review its diff, and let
 Terry stage and amend it into the squash before pushing. Do not manually rewrite
 entries: adjust the template or relevant commit message when needed, then
 regenerate. Do not include intermediate feature commits or invent a prospective
-hash. This commit/generate/amend/push sequence was verified with VarColor.
+hash. This commit/generate/amend/push sequence was verified with VarColor and Palette.
 
 The current template groups entries by commit type and orders them oldest first
 within each group. It uses the subject, scope, breaking marker, and
@@ -177,6 +179,26 @@ a development header's version is not proof of a tagged release. Push only
 authorized tags; published release tags stay fixed.
 
 ## Upstream and cross-machine updates
+
+`test/UpstreamCompatibility` applies the enhanced header to the upstream
+baseline and records the exact upstream test/documentation adjustments in
+`UpstreamTestCompatibility.md`. It is a verification branch, not a second
+feature-development line. Preserve upstream identifier spellings in its tests.
+Do not update upstream `ChangeLog.md` merely for compatibility verification;
+release-note requirements can be settled when preparing an upstream PR.
+
+Before citing a green run, verify that the enhanced header and adjustments
+are committed and pushed, not merely present in the working tree. A push of
+an unchanged baseline tests upstream code only. Match full local/remote/run
+SHAs and inspect every applicable job. Terry plans periodic rebases of this
+branch; rebasing or refreshing its header requires authorization and fresh CI.
+
+Keeping production changes in `color.h` reduces rebase conflicts, but changes
+to supporting APIs, tests, documentation, or tooling can still require fixes.
+The original upstream baseline remains `0fc31633`; Terry reported upstream/main
+had not advanced at this handoff. Inspect current refs before any later rebase.
+Eventual consolidation of the complete contribution is a future upstream
+submission step, not permission to rewrite current refs.
 
 Continue on the agreed upstream baseline. Inspect upstream changes before
 incorporating them. Update the development baseline when a relevant upstream
